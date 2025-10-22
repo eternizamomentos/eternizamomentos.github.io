@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/* 🎨 Paleta de cores (Social Media Expert + otimização de performance) */
+@theme {
+  /* Base */
+  --color-bg: #FFFBF7;
+  --color-text: #0B1324;
+  --color-text-muted: #667085;
+
+  /* Marca */
+  --color-navy: #101828;
+  --color-rose: #E9B8C7;
+  --color-gold: #E7B75F;
+
+  /* Ações (CTA) */
+  --color-cta: #C7355D;
+  --color-cta-hover: #A62C4D;
+  --color-cta-text: #FFFFFF;
+
+  /* Linhas e sistema */
+  --color-line: #E7E4DF;
+  --color-success: #2E7D6B;
+  --color-warning: #F4A261;
+  --color-error: #D64545;
+  --color-info: #2E6AA8;
+
+  /* Gradientes */
+  --gradient-night-gold: linear-gradient(135deg, #101828 0%, #2C2240 60%, #3A2A55 100%);
+  --gradient-rose-glow: linear-gradient(135deg, #FFF6F9 0%, #F5E2E9 100%);
+}
+
+/* ⚙️ Tipografia fluida e layout base */
+:root {
+  --step--1: clamp(0.875rem, 0.83rem + 0.2vw, 0.95rem);
+  --step-0: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.1rem + 0.8vw, 1.5rem);
+  --step-2: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  --step-3: clamp(2.25rem, 1.8rem + 2vw, 3rem);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, Helvetica, Arial;
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Utilitários */
+a {
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: var(--color-cta);
+}
+
+/* Botão primário padrão */
+.btn-primary {
+  background: var(--color-cta);
+  color: var(--color-cta-text);
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-weight: 600;
+  transition: background 0.25s ease;
+}
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--color-cta-hover);
+}
+
+/* Layout container padrão */
+.container-page {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,43 +1,12 @@
-name: Deploy Next.js static export to GitHub Pages (root)
-
-on:
-  push:
-    branches: [ main ]
-
-permissions:
-  contents: write
-
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build static site with Next.js
-        run: |
-          npm run build
-          if [ ! -d "out" ]; then
-            echo "❌ Pasta 'out' não encontrada após o build. Verifique a configuração de export."
-            exit 1
-          fi
-          echo "✅ Pasta 'out' gerada com sucesso!"
-
       - name: Deploy to main branch (root)
         run: |
           cp -r out/* .
+          # garante .nojekyll e CNAME SEMPRE após a cópia
+          touch .nojekyll
+          echo "www.studioarthub.com" > CNAME
           rm -rf out
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "🚀 Deploy automático via GitHub Actions" || echo "Nada para atualizar"
+          git commit -m "🚀 Deploy automático via GitHub Actions (+.nojekyll +CNAME)" || echo "Nada para atualizar"
           git push origin main

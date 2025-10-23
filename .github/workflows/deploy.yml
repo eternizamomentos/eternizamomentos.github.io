@@ -29,7 +29,7 @@ jobs:
       - name: 🚚 Deploy to GitHub Pages (root branch)
         run: |
           cp -r out/* .
-          touch .nojekyll
+          touch .nojekyll                 # 🔥 Garante que o GitHub Pages não bloqueie _next/
           echo "www.studioarthub.com" > CNAME
           rm -rf out
           git config user.name "github-actions[bot]"

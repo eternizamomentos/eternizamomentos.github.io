@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",             // Gera o site estático
-  images: { unoptimized: true }, // Necessário para exportação
-  trailingSlash: true,           // URLs terminando com /
-  assetPrefix: "./",             // Caminhos relativos (GH Pages)
-  basePath: "",                  // Raiz do domínio
+  output: "export", // gera site estático
+  images: { unoptimized: true },
+  trailingSlash: true, // adiciona / no fim das rotas (importante no GH Pages)
+  assetPrefix: "./", // usa caminhos relativos para assets (correção principal)
+  basePath: "",
   reactStrictMode: true,
 };
 

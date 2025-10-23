@@ -1,12 +1,16 @@
+import { useEffect } from "react";
 import type { AppProps } from "next/app";
-import "../styles/globals.css";
-import Analytics from "../components/Analytics";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Analytics />
-      <Component {...pageProps} />
-    </>
-  );
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bypass = params.get("preview");
+
+    // Se não houver parâmetro especial, redireciona para manutenção
+    if (!bypass) {
+      window.location.href = "/maintenance.html";
+    }
+  }, []);
+
+  return <Component {...pageProps} />;
 }

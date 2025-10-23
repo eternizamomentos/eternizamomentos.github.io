@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Studio Art Hub — Modo manutenção ativo temporariamente. Em breve, o novo site completo.">
+  <title>Studio Art Hub | Em manutenção</title>
+  <style>
+    :root {
+      --navy: #101828;
+      --rose: #E9B8C7;
+      --gold: #E7B75F;
+      --cta: #C7355D;
+      --cta-hover: #A62C4D;
+      --bg: #FFFBF7;
+      --text: #0B1324;
+      --muted: #667085;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    main {
+      max-width: 600px;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--navy);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    a.cta {
+      display: inline-block;
+      background: var(--cta);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+
+    a.cta:hover {
+      background: var(--cta-hover);
+    }
+
+    footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.6rem; }
+      p { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🎵 Studio Art Hub</h1>
+    <p>Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.<br>
+       Em breve, você poderá <em>transformar sua história em música</em> com nossa criação híbrida — humana + IA Donna Pro®.
+    </p>
+    <a class="cta" href="https://wa.me/55XXXXXXXXXX" target="_blank">Fale conosco no WhatsApp</a>
+    <footer>
+      © <span id="year"></span> Studio Art Hub · Todos os direitos reservados
+    </footer>
+  </main>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

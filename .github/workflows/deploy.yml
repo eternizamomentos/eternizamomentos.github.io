@@ -6,11 +6,9 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,8 +23,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and Export static site
-        run: npm run build
+      - name: Build static site with Next.js
+        run: |
+          npm run build
+          if [ ! -d "out" ]; then
+            echo "❌ Pasta 'out' não encontrada após o build. Verifique a configuração de export."
+            exit 1
+          fi
+          echo "✅ Pasta 'out' gerada com sucesso!"
 
       - name: Deploy to main branch (root)
         run: |

@@ -28,10 +28,13 @@ jobs:
 
       - name: 🚚 Deploy to GitHub Pages (root branch)
         run: |
-          # copia o export para a raiz sem mexer nos arquivos já versionados
+          # copia o export para a raiz
           cp -r out/* .
 
-          # garante presença dos arquivos críticos, sem sobrescrever se já existirem
+          # garante inclusão explícita do HTML de manutenção
+          cp maintenance.html ./maintenance.html
+
+          # garante presença dos arquivos críticos
           [ -f .nojekyll ] || touch .nojekyll
           if [ -f CNAME ]; then
             echo "CNAME preservado: $(cat CNAME)"
@@ -44,5 +47,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "🚀 Deploy automático via GitHub Actions (preserva .nojekyll/CNAME)" || echo "Nada para atualizar"
+          git commit -m "🚀 Deploy automático via GitHub Actions (inclui maintenance.html)" || echo "Nada para atualizar"
           git push origin main

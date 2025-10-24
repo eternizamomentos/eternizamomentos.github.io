@@ -27,13 +27,22 @@ jobs:
         run: npm run build
 
       - name: 🚚 Deploy to GitHub Pages (root branch)
-        run: |
-          cp -r out/* .
-          touch .nojekyll                 # 🔥 Garante que o GitHub Pages não bloqueie _next/
-          echo "www.studioarthub.com" > CNAME
-          rm -rf out
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "🚀 Deploy automático via GitHub Actions" || echo "Nada para atualizar"
-          git push origin main
+  run: |
+    # copia o export para a raiz sem mexer nos arquivos já versionados
+    cp -r out/* .
+
+    # garante presença dos arquivos críticos, sem sobrescrever se já existirem
+    [ -f .nojekyll ] || touch .nojekyll
+    if [ -f CNAME ]; then
+      echo "CNAME preservado: $(cat CNAME)"
+    else
+      echo "www.studioarthub.com" > CNAME
+    fi
+
+    # limpeza e commit
+    rm -rf out
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git add .
+    git commit -m "🚀 Deploy automático via GitHub Actions (preserva .nojekyll/CNAME)" || echo "Nada para atualizar"
+    git push origin main

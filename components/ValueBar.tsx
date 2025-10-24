@@ -1,5 +1,4 @@
 import CTAButton from "./CTAButton";
-
 export default function ValueBar() {
   return (
     <section aria-labelledby="valor-do-pacote" className="bg-white/80 backdrop-blur border-y border-gray-200">
@@ -20,9 +19,11 @@ export default function ValueBar() {
           <li>Registro no EDA</li>
         </ul>
 
-        <div className="md:justify-self-end">
-          <CTAButton href="https://docs.google.com/forms/d/e/1FAIpQLSeAD0LAytFFMwwMwj1WbKgutcJGoWKtNfr4j-z08vGT3TtX3w/viewform">Peça sua música</CTAButton>
-        </div>
+<CTAButton
+  href="https://docs.google.com/forms/d/e/1FAIpQLSeAD0LAytFFMwwMwj1WbKgutcJGoWKtNfr4j-z08vGT3TtX3w/viewform"
+  label="Peça sua música"
+  target="_blank"
+/>
       </div>
     </section>
   );

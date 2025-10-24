@@ -1,6 +1,7 @@
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
 import { useEffect, useState } from "react";
+import CTAButton from "../components/CTAButton"; // ✅ Import correto no topo
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
@@ -10,15 +11,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     const bypass = params.get("preview");
     const isLocal = window.location.hostname === "localhost";
 
-    // Modo manutenção ativado?
     if (!bypass) {
-      // Ambiente de desenvolvimento → renderiza internamente o componente Maintenance
       if (isLocal) {
         setIsAllowed(false);
         return;
       }
 
-      // Produção → redirecionamento para maintenance.html
       if (!window.location.pathname.includes("maintenance.html")) {
         window.location.replace("/maintenance.html");
         return;
@@ -31,7 +29,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   if (isAllowed === null) return null; // evita flash
 
   if (isAllowed === false) {
-    // Renderiza a página de manutenção local, inline
+    // Renderiza a página de manutenção local (versão inline)
     return (
       <div
         style={{
@@ -69,33 +67,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.
             <br />
             Em breve, você poderá{" "}
-            <em>transformar sua história em música</em> com nossa criação híbrida —
-            humana + IA <strong>Donna Pro®</strong>.
+            <em>transformar sua história em música</em> com nossa criação híbrida — humana + IA{" "}
+            <strong>Donna Pro®</strong>.
           </p>
 
-          <a
-            href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs.%20%0A%C3%89%20pra%20uma%20ocasi%C3%A3o%20muito%20especial."
+          {/* ✅ Aqui usamos o CTAButton normalmente */}
+          <CTAButton
+            href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs."
+            label="Fale conosco no WhatsApp"
             target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "inline-block",
-              background: "#C7355D",
-              color: "#fff",
-              padding: "12px 24px",
-              borderRadius: "8px",
-              textDecoration: "none",
-              fontWeight: 600,
-              transition: "background 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              (e.target as HTMLElement).style.background = "#A62C4D";
-            }}
-            onMouseOut={(e) => {
-              (e.target as HTMLElement).style.background = "#C7355D";
-            }}
-          >
-            Fale conosco no WhatsApp
-          </a>
+          />
 
           <footer
             style={{

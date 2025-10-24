@@ -1,79 +1,39 @@
 // /pages/maintenance.tsx
+import CTAButton from "../components/CTAButton";
+
 export default function MaintenancePage() {
   const year = new Date().getFullYear();
 
   return (
     <div
+      className="min-h-screen flex items-center justify-center px-6 text-center"
       style={{
         fontFamily: '"Segoe UI", system-ui, sans-serif',
         background: "#FFFBF7",
         color: "#0B1324",
-        margin: 0,
-        padding: "0 1.5rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        textAlign: "center",
       }}
     >
-      <main style={{ maxWidth: 600, padding: "2rem" }}>
-        <h1
-          style={{
-            fontSize: "2rem",
-            color: "#101828",
-            marginBottom: "1rem",
-          }}
-        >
+      <main className="max-w-xl py-12">
+        <h1 className="text-3xl font-semibold text-[#101828] mb-4">
           🎵 Studio Art Hub
         </h1>
 
-        <p
-          style={{
-            color: "#667085",
-            fontSize: "1.1rem",
-            marginBottom: "2rem",
-            lineHeight: 1.6,
-          }}
-        >
+        <p className="text-[1.1rem] text-[#667085] mb-8 leading-relaxed">
           Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.
           <br />
           Em breve, você poderá{" "}
-          <em>transformar sua história em música</em> com nossa criação híbrida —
+          <em>transformar sua história em música</em> com nossa criação híbrida —{" "}
           humana + IA <strong>Donna Pro®</strong>.
         </p>
 
-        <a
+        {/* ✅ Botão CTA visual premium */}
+        <CTAButton
           href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs.%20%0A%C3%89%20pra%20uma%20ocasi%C3%A3o%20muito%20especial."
+          label="Fale conosco no WhatsApp"
           target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "inline-block",
-            background: "#C7355D",
-            color: "#fff",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            textDecoration: "none",
-            fontWeight: 600,
-            transition: "background 0.3s ease",
-          }}
-          onMouseOver={(e) => {
-            (e.target as HTMLElement).style.background = "#A62C4D";
-          }}
-          onMouseOut={(e) => {
-            (e.target as HTMLElement).style.background = "#C7355D";
-          }}
-        >
-          Fale conosco no WhatsApp
-        </a>
+        />
 
-        <footer
-          style={{
-            marginTop: "3rem",
-            color: "#667085",
-            fontSize: "0.9rem",
-          }}
-        >
+        <footer className="mt-8 text-sm text-[#667085]">
           © {year} Studio Art Hub · Todos os direitos reservados
         </footer>
       </main>

@@ -17,6 +17,10 @@
       --muted: #667085;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
       background: var(--bg);
@@ -30,20 +34,22 @@
       text-align: center;
     }
 
-    main {
+    main.container-page {
       max-width: 600px;
-      padding: 2rem;
+      width: 100%;
+      padding: 2rem 1rem;
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: clamp(2rem, 5vw, 2.5rem);
       color: var(--navy);
       margin-bottom: 1rem;
+      font-weight: 600;
     }
 
     p {
       color: var(--muted);
-      font-size: 1.1rem;
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
       margin-bottom: 2rem;
       line-height: 1.6;
     }
@@ -68,21 +74,21 @@
       color: var(--muted);
       font-size: 0.9rem;
     }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 1.6rem; }
-      p { font-size: 1rem; }
-    }
   </style>
 </head>
 <body>
-  <main>
+  <main class="container-page">
     <h1>🎵 Studio Art Hub</h1>
     <p>
       Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.<br />
       Em breve, você poderá <em>transformar sua história em música</em> com nossa criação híbrida — humana + IA <strong>Donna Pro®</strong>.
     </p>
-    <a class="cta" href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs.%20%0A%C3%89%20pra%20uma%20ocasi%C3%A3o%20muito%20especial." target="_blank" rel="noopener noreferrer">
+    <a
+      class="cta"
+      href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs.%20%0A%C3%89%20pra%20uma%20ocasi%C3%A3o%20muito%20especial."
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       Fale conosco no WhatsApp
     </a>
     <footer>

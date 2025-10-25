@@ -28,12 +28,11 @@ jobs:
 
       - name: 🚚 Deploy to GitHub Pages (root branch)
         run: |
+          # força sobrescrita com a versão correta do HTML
+          cp -f maintenance.html ./out/maintenance.html
+
           # copia o export para a raiz
           cp -r out/* .
-
-          # ⚠️ Força sobrescrita com a versão correta do arquivo local
-          cp -f maintenance.html ./maintenance.html
-          cp -f maintenance.html ./out/maintenance.html
 
           # garante presença dos arquivos críticos
           [ -f .nojekyll ] || touch .nojekyll

@@ -31,6 +31,10 @@ jobs:
           # copia o export para a raiz
           cp -r out/* .
 
+          # ⚠️ Força sobrescrita com a versão correta do arquivo local
+          cp -f maintenance.html ./maintenance.html
+          cp -f maintenance.html ./out/maintenance.html
+
           # garante presença dos arquivos críticos
           [ -f .nojekyll ] || touch .nojekyll
           if [ -f CNAME ]; then
@@ -44,5 +48,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "🚀 Deploy automático via GitHub Actions (com maintenance.html correto)" || echo "Nada para atualizar"
+          git commit -m "🚀 Deploy automático via GitHub Actions (força maintenance.html)" || echo "Nada para atualizar"
           git push origin main

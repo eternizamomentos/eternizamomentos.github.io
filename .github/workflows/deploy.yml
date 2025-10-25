@@ -26,8 +26,9 @@ jobs:
       - name: 🏗️ Build static site
         run: npm run build
 
-      - name: 📥 Substitui manualmente o maintenance.html dentro de /out
-        run: cp maintenance.html out/maintenance.html
+      - name: 📥 Substitui manualmente o maintenance.html gerado  
+        run: |
+          cp maintenance.html out/maintenance/index.html
 
       - name: 🚚 Deploy to GitHub Pages (root branch)
         run: |
@@ -44,5 +45,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "🚀 Deploy automático via GitHub Actions (agora com maintenance.html correto)" || echo "Nada para atualizar"
+          git commit -m "🚀 Deploy automático via GitHub Actions (maintenance/index.html atualizado)" || echo "Nada para atualizar"
           git push origin main

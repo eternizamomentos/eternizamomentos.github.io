@@ -4,19 +4,23 @@ import Hero from "../components/Hero";
 import ValueBar from "../components/ValueBar";
 import TrustBadges from "../components/TrustBadges";
 import Seo from "../components/Seo";
+import FeaturedSamples from "../components/FeaturedSamples";
 
 // Carrossel → lazy (reduz JS inicial e melhora FCP/LCP)
-const TestimonialCarousel = dynamic(() => import("../components/TestimonialCarousel"), {
-  ssr: false,
-  loading: () => (
-    <section
-      className="container-page py-10 text-center text-sm text-gray-500"
-      aria-busy="true"
-    >
-      Carregando depoimentos…
-    </section>
-  ),
-});
+const TestimonialCarousel = dynamic(
+  () => import("../components/TestimonialCarousel"),
+  {
+    ssr: false,
+    loading: () => (
+      <section
+        className="container-page py-10 text-center text-sm text-gray-500"
+        aria-busy="true"
+      >
+        Carregando depoimentos…
+      </section>
+    ),
+  }
+);
 
 export default function Home() {
   const orgSchema = {
@@ -61,6 +65,9 @@ export default function Home() {
         <Hero />
         <ValueBar />
         <TrustBadges />
+
+        {/* Amostras com player premium */}
+        <FeaturedSamples />
 
         <section aria-label="Processo e Depoimentos">
           {/* ProcessSteps pode ser reativado depois, logo acima do carrossel */}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useState, useEffect, useId } from "react";
-import CTAButton from "../components/CTAButton"; // ✅ Import correto no topo
+import CTAButton from "../components/CTAButton";
 
 function SkipToContent() {
   return (
@@ -15,13 +15,28 @@ function SkipToContent() {
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState("");
   const navId = useId();
 
   useEffect(() => {
+    const path = window.location.pathname.replace(/\/$/, "") || "/";
+    setCurrentPath(path); // ✅ Remove barra final
     const close = () => setOpen(false);
     window.addEventListener("resize", close);
     return () => window.removeEventListener("resize", close);
   }, []);
+
+  const navLinks = [
+    { href: "/", label: "Início" },
+    { href: "/como-funciona", label: "Como Funciona" },
+    { href: "/preco", label: "Preço" },
+    { href: "/contato", label: "Contato" },
+  ];
+
+  const linkClass = (href: string, isMobile = false) =>
+    `${
+      currentPath === href ? "text-cta font-semibold" : "text-gray-700 hover:text-gray-900"
+    } ${isMobile ? "py-2" : ""}`;
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
@@ -32,24 +47,13 @@ export default function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <nav
-          className="hidden md:flex items-center gap-5"
-          aria-label="Navegação principal"
-        >
-          <Link href="/" className="text-gray-700 hover:text-gray-900">
-            Início
-          </Link>
-          <Link href="/como-funciona" className="text-gray-700 hover:text-gray-900">
-            Como Funciona
-          </Link>
-          <Link href="/preco" className="text-gray-700 hover:text-gray-900">
-            Preço
-          </Link>
-          <Link href="/contato" className="text-gray-700 hover:text-gray-900">
-            Contato
-          </Link>
+        <nav className="hidden md:flex items-center gap-5" aria-label="Navegação principal">
+          {navLinks.map(({ href, label }) => (
+            <Link key={href} href={href} className={linkClass(href)}>
+              {label}
+            </Link>
+          ))}
 
-          {/* ✅ Botão CTA premium do header */}
           <CTAButton
             href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs."
             label="WhatsApp"
@@ -75,28 +79,18 @@ export default function Header() {
       {/* Mobile nav */}
       <nav
         id={navId}
-        className={`md:hidden border-t border-gray-200 ${
-          open ? "block" : "hidden"
-        }`}
+        className={`md:hidden border-t border-gray-200 ${open ? "block" : "hidden"}`}
         aria-label="Navegação principal (mobile)"
       >
         <div className="container-page py-3 flex flex-col gap-2">
-          <Link href="/" className="py-2 text-gray-800">
-            Início
-          </Link>
-          <Link href="/como-funciona" className="py-2 text-gray-800">
-            Como Funciona
-          </Link>
-          <Link href="/preco" className="py-2 text-gray-800">
-            Preço
-          </Link>
-          <Link href="/contato" className="py-2 text-gray-800">
-            Contato
-          </Link>
+          {navLinks.map(({ href, label }) => (
+            <Link key={href} href={href} className={linkClass(href, true)}>
+              {label}
+            </Link>
+          ))}
 
-          {/* ✅ Botão CTA no mobile (versão padrão visual igual à manutenção) */}
           <CTAButton
-            href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs."
+            href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AA."
             label="Falar no WhatsApp"
             target="_blank"
           />

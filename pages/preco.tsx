@@ -39,7 +39,10 @@ export default function PrecoPage() {
     <>
       <Head>
         <title>Preço | Studio Art Hub</title>
-        <meta name="description" content="Descubra quanto custa transformar sua história em música personalizada e emocional." />
+        <meta
+          name="description"
+          content="Descubra quanto custa transformar sua história em música personalizada e emocional."
+        />
       </Head>
 
       <Header />
@@ -81,23 +84,28 @@ export default function PrecoPage() {
               <li>🔁 <strong>Duas revisões gratuitas:</strong> ajuste de tom, letra ou mix.</li>
               <li>📜 <strong>Prova de criação + registro:</strong> garantia de autoria e segurança.</li>
               <li>📦 <strong>Entrega digital:</strong> arquivo MP3 final em alta qualidade.</li>
-              <li>🕊️ <em>Você paga uma vez. A emoção dura para sempre.</em></li>
             </ul>
           </div>
+          <p className="text-center text-lg font-medium mt-10 italic text-rose-800">
+            Você paga uma vez. A emoção dura para sempre.
+          </p>
         </section>
 
         {/* Preço */}
         <section className="bg-[#101828] text-[#E7B75F] py-20 text-center px-4">
           <h2 className="text-2xl md:text-3xl font-semibold mb-4">Seu investimento:</h2>
           <p className="text-3xl md:text-4xl font-bold mb-4">💰 R$ 497,00</p>
-          <p className="mb-6 text-base">Pagamento único • Pix ou Cartão</p>
-          <ul className="mb-6 text-sm text-[#F7EAC0] space-y-1">
+          <p className="mb-6 text-lg">Pagamento único • Pix ou Cartão</p>
+
+          <ul className="mb-6 text-base text-[#F7EAC0] space-y-1">
             <li>✅ 2 revisões inclusas</li>
             <li>✅ Entrega digital com capa</li>
             <li>✅ Registro de criação incluído</li>
             <li>✅ Entregue em 1 ou 2 dias úteis</li>
           </ul>
-          <p className="italic text-sm mb-6">💬 “Parece caro... até você ouvir sua história transformada em música.”</p>
+
+          <p className="italic text-base mb-6">💬 “Parece caro... até você ouvir sua história transformada em música.”</p>
+
           <CTAButton
             href="https://wa.me/5596991451428?text=Quero%20pedir%20minha%20m%C3%BAsica%20personalizada%20agora!"
             label="👉 Peça sua música agora"
@@ -107,11 +115,11 @@ export default function PrecoPage() {
 
         {/* Prova social */}
         <section className="bg-[#E9B8C7]/10 py-16 px-4 text-center">
-          <blockquote className="text-lg italic max-w-2xl mx-auto mb-4">
+          <blockquote className="text-xl italic max-w-2xl mx-auto mb-4">
             “Quando ouvi, chorei. Foi como reviver um momento que pensei que nunca mais voltaria.”
           </blockquote>
-          <p className="text-sm mb-6">— Carla, cliente Studio Art Hub</p>
-          <div className="text-xs text-gray-700 space-x-4">
+          <p className="text-base mb-6">— Carla, cliente Studio Art Hub</p>
+          <div className="text-base text-gray-700 space-x-4">
             <span>🔒 Pagamento seguro</span>
             <span>🎧 Entrega garantida</span>
             <span>💬 Atendimento humano</span>
@@ -123,7 +131,7 @@ export default function PrecoPage() {
           <h2 className="text-center text-xl md:text-2xl font-semibold mb-10">
             Antes de pedir sua música…
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4 text-base">
             {faqItems.map((item, index) => (
               <div key={index} className="border border-gray-200 rounded">
                 <button
@@ -134,7 +142,7 @@ export default function PrecoPage() {
                   <span>{faqOpen === index ? "−" : "+"}</span>
                 </button>
                 {faqOpen === index && (
-                  <div className="px-4 pb-4 text-gray-600 text-sm">{item.answer}</div>
+                  <div className="px-4 pb-4 text-gray-600">{item.answer}</div>
                 )}
               </div>
             ))}
@@ -148,7 +156,7 @@ export default function PrecoPage() {
             Imagine alguém ouvindo a própria história em forma de música...
             É isso que você está prestes a fazer.
           </p>
-          <p className="mb-10 text-sm italic">💛 Uma lembrança eterna começa com um clique.</p>
+          <p className="mb-10 text-base italic">💛 Uma lembrança eterna começa com um clique.</p>
           <CTAButton
             href="https://wa.me/5596991451428?text=Quero%20minha%20m%C3%BAsica%20personalizada%20agora"
             label="🎶 Peça sua música agora"

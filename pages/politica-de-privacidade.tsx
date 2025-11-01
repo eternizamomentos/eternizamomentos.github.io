@@ -42,7 +42,7 @@ export default function PoliticaDePrivacidadePage() {
                 <strong>E-mail:</strong>{" "}
                 <a
                   href="https://mail.google.com/mail/?view=cm&to=info@studioarthub.com&su=Solicitação%20de%20Informações&body=Olá,%20gostaria%20de%20saber%20mais%20sobre%20sua%20Política%20de%20Privacidade."
-                  className="text-[#C7355D] font-medium"
+                  className="text-[#C7355D] font-medium hover:underline transition-colors duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -50,7 +50,10 @@ export default function PoliticaDePrivacidadePage() {
                 </a>
                 <br />
                 <strong>Site:</strong>{" "}
-                <a href="https://www.studioarthub.com" className="text-[#C7355D] font-medium">
+                <a href="https://www.studioarthub.com"
+                  className="text-[#C7355D] font-medium hover:underline transition-colors duration-200"
+                  target="_blank"
+                  rel="noopener noreferrer">
                   www.studioarthub.com
                 </a>
               </p>
@@ -182,7 +185,7 @@ export default function PoliticaDePrivacidadePage() {
                 Para exercer seus direitos, escreva para{" "}
                 <a
                   href="https://mail.google.com/mail/?view=cm&to=info@studioarthub.com&su=Solicitação%20de%20Informações&body=Olá,%20gostaria%20de%20saber%20mais%20sobre%20sua%20Política%20de%20Privacidade."
-                  className="text-[#C7355D] font-medium"
+                  className="text-[#C7355D] font-medium hover:underline transition-colors duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

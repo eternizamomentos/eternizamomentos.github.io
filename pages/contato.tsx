@@ -29,7 +29,7 @@ export default function Contato() {
           {/* ✅ Botão padronizado Studio Art Hub */}
           <CTAButton
             href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20o%20Studio%20Art%20Hub."
-            label="Falar com o Studio Art Hub" Olá, gostaria de pedir minha música inédita 🎧
+            label="Falar com o Studio Art Hub"
             target="_blank"
           />
 

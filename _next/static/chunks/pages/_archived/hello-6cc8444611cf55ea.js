@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[92],{4562:(_,n,e)=>{(window.__NEXT_P=window.__NEXT_P||[]).push(["/_archived/hello",function(){return e(4582)}])},4582:(_,n,e)=>{"use strict";function s(_,n){n.status(200).json({name:"John Doe"})}e.r(n),e.d(n,{default:()=>s})}},_=>{_.O(0,[636,593,792],()=>_(_.s=4562)),_N_E=_.O()}]);

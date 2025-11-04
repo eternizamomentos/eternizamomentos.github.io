@@ -3,6 +3,7 @@ import { useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CTAButton from "../components/CTAButton";
+import PixCheckout from "../components/PixCheckout";
 
 export default function PrecoPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -162,6 +163,9 @@ export default function PrecoPage() {
             label="🎶 Peça sua música agora"
             className="bg-cta text-white px-6 py-3 rounded font-semibold"
           />
+        </section>
+        <section id="checkout" className="py-20 bg-[#FFF6F9]">
+          <PixCheckout />
         </section>
       </main>
 

@@ -1,16 +1,19 @@
 {
   "name": "studioarthub",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "export": "next export",    
-    "lint": "eslint"
+    "build": "next build && next export",
+    "preview": "npx serve@latest out -l 3000",
+    "start": "npm run preview",
+    "export": "next export",
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "15.5.6",
+    "qrcode.react": "^4.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

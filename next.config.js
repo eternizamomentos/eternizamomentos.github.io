@@ -1,19 +1,10 @@
+// next.config.js
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === "production";
-
 const nextConfig = {
-  output: "export",
-  assetPrefix: isProd ? "./" : undefined,
-  images: { unoptimized: true },
-  basePath: "",
-  trailingSlash: true,
-  reactStrictMode: true,
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-    };
-    return config;
-  },
+  output: 'export',                 // SSG (next export)
+  images: { unoptimized: true },    // evita pipeline de imagens do Next
+  eslint: { ignoreDuringBuilds: true }, // opcional: não travar build por lint
+  typescript: { ignoreBuildErrors: false } // manter TS estrito
 };
 
 export default nextConfig;

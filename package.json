@@ -5,10 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export",
+    "build": "next build",
     "preview": "npx serve@latest out -l 3000",
     "start": "npm run preview",
-    "export": "next export",
     "lint": "next lint"
   },
   "dependencies": {

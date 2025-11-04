@@ -1,49 +1,32 @@
-name: 🚀 Deploy Next.js static site to GitHub Pages
+name: Deploy Studio Art Hub
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 🧩 Checkout repository
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node.js
+      - name: Node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: 📦 Install dependencies
+      - name: Instalar dependências
         run: npm ci
 
-      - name: 🏗️ Build static site
+      - name: Build + Export (SSG)
         run: npm run build
 
-      - name: 📥 Substitui manualmente o maintenance.html gerado  
-        run: |
-          cp maintenance.html out/maintenance/index.html
-
-      - name: 🚚 Deploy to GitHub Pages (root branch)
-        run: |
-          cp -r out/* .
-
-          [ -f .nojekyll ] || touch .nojekyll
-          if [ -f CNAME ]; then
-            echo "CNAME preservado: $(cat CNAME)"
-          else
-            echo "www.studioarthub.com" > CNAME
-          fi
-
-          rm -rf out
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "🚀 Deploy automático via GitHub Actions (maintenance/index.html atualizado)" || echo "Nada para atualizar"
-          git push origin main
+      - name: Publicar no GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out

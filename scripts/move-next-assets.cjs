@@ -1,6 +1,4 @@
 // scripts/move-next-assets.cjs
-// Move a pasta _next para dentro do basePath (studioarthub), evitando 404 no GitHub Pages.
-
 const fs = require('fs');
 const path = require('path');
 
@@ -10,7 +8,7 @@ const DEST_BASE = path.join(OUT_DIR, 'studioarthub');
 const DEST = path.join(DEST_BASE, '_next');
 
 if (!fs.existsSync(SRC)) {
-  console.log('Nada para mover: out/_next não existe (talvez build não rodou?).');
+  console.log('Nada para mover: out/_next não existe (talvez o build não rodou?).');
   process.exit(0);
 }
 

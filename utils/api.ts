@@ -4,11 +4,16 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://studioarthub-api.rapid-hill-dc23.workers.dev";
 
-export async function createPixOrder(data: unknown) {
+interface PixOrderData {
+  amount?: number;
+  [key: string]: any;
+}
+
+export async function createPixOrder(data: PixOrderData) {
   const resp = await fetch(`${API_URL}/api/pagarme/create-order`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    // Em produção: mandar amount “real” (ou 500 centavos p/ teste)
+    // Em produção: mandar amount "real" (ou 500 centavos p/ teste)
     body: JSON.stringify({ ...data, mode: "live" })
   });
   if (!resp.ok) {

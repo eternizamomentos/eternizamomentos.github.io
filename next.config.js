@@ -1,11 +1,13 @@
 /** @type {import('next').NextConfig} */
+const isProd = true; // GitHub Pages + subcaminho
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'export',
-  trailingSlash: true,
-  basePath: '/studioarthub',
-  assetPrefix: '/studioarthub/',
-  images: { unoptimized: true }
+  images: { unoptimized: true },
+  basePath: isProd ? '/studioarthub' : '',
+  assetPrefix: isProd ? '/studioarthub/' : '',
+  trailingSlash: false
 };
 
 export default nextConfig;

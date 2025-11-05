@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "cross-env NODE_ENV=production next build",
-    "build:gh": "cross-env BUILD_FOR_GH_PAGES=1 NODE_ENV=production next build && node scripts/move-next-assets.cjs",
+    "build": "next build",
+    "build:gh": "next build",
     "preview": "npx http-server ./out -p 3000",
     "start": "npm run preview",
     "lint": "next lint"

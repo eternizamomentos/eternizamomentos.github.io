@@ -1,12 +1,10 @@
 /** @type {import('next').NextConfig} */
-const isGitHubPages = process.env.BUILD_FOR_GH_PAGES === '1';
-
 const nextConfig = {
   reactStrictMode: true,
   output: 'export',
   trailingSlash: true,
-  basePath: isGitHubPages ? '/studioarthub' : '',
-  assetPrefix: isGitHubPages ? '/studioarthub/' : '',
+  basePath: '/studioarthub',
+  assetPrefix: '/studioarthub/',
   images: { unoptimized: true }
 };
 

@@ -1,25 +1,19 @@
-// utils/api.ts — versão live/test adaptável
+// utils/api.ts
 const API_URL =
+  (typeof window !== "undefined" ? (window as any).__API_URL__ : undefined) ||
   process.env.NEXT_PUBLIC_API_URL ||
   "https://studioarthub-api.rapid-hill-dc23.workers.dev";
 
-export async function createPixOrder(data: any) {
-  // ✅ detecta modo automaticamente: usa "live" se tiver chave configurada
-  const mode = process.env.NEXT_PUBLIC_API_MODE || "live";
-
-  const response = await fetch(`${API_URL}/api/pagarme/create-order`, {
+export async function createPixOrder(data: unknown) {
+  const resp = await fetch(`${API_URL}/api/pagarme/create-order`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ...data, mode }),
+    headers: { "Content-Type": "application/json" },
+    // Em produção: mandar amount “real” (ou 500 centavos p/ teste)
+    body: JSON.stringify({ ...data, mode: "live" })
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Erro da API (${response.status}): ${errText}`);
+  if (!resp.ok) {
+    const txt = await resp.text().catch(() => "");
+    throw new Error(`HTTP ${resp.status} - ${txt}`);
   }
-
-  const json = await response.json();
-  return json;
+  return resp.json();
 }

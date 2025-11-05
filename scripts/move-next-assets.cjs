@@ -1,5 +1,5 @@
 // scripts/move-next-assets.cjs
-// Move ./out/_next -> ./out/studioarthub/_next para compatibilizar com basePath em servidores estáticos.
+// Move a pasta _next para dentro do basePath (studioarthub), evitando 404 no GitHub Pages.
 
 const fs = require('fs');
 const path = require('path');
@@ -9,39 +9,18 @@ const SRC = path.join(OUT_DIR, '_next');
 const DEST_BASE = path.join(OUT_DIR, 'studioarthub');
 const DEST = path.join(DEST_BASE, '_next');
 
-function ensureDir(p) {
-  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+if (!fs.existsSync(SRC)) {
+  console.log('Nada para mover: out/_next não existe (talvez build não rodou?).');
+  process.exit(0);
 }
 
-function moveRecursive(src, dest) {
-  if (!fs.existsSync(src)) return;
-  ensureDir(dest);
-  for (const entry of fs.readdirSync(src)) {
-    const srcPath = path.join(src, entry);
-    const destPath = path.join(dest, entry);
-    const stat = fs.statSync(srcPath);
-    if (stat.isDirectory()) {
-      ensureDir(destPath);
-      moveRecursive(srcPath, destPath);
-    } else {
-      fs.renameSync(srcPath, destPath);
-    }
-  }
-  // remover diretório vazio
-  fs.rmdirSync(src, { recursive: true });
+if (!fs.existsSync(DEST_BASE)) {
+  fs.mkdirSync(DEST_BASE, { recursive: true });
 }
 
-(function main() {
-  if (!fs.existsSync(OUT_DIR)) {
-    console.error('❌ Pasta ./out não encontrada. Rode o build primeiro.');
-    process.exit(1);
-  }
-  if (!fs.existsSync(SRC)) {
-    console.log('ℹ️ Nada para mover: ./out/_next não encontrado (talvez já movido).');
-    process.exit(0);
-  }
-  ensureDir(DEST_BASE);
-  console.log('🚚 Movendo ./out/_next -> ./out/studioarthub/_next ...');
-  moveRecursive(SRC, DEST);
-  console.log('✅ Assets movidos com sucesso.');
-})();
+console.log('Movendo out/_next → out/studioarthub/_next ...');
+
+fs.rmSync(DEST, { recursive: true, force: true });
+fs.renameSync(SRC, DEST);
+
+console.log('OK: assets de _next agora estão sob /studioarthub/_next.');

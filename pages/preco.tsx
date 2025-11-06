@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CTAButton from "../components/CTAButton";
 import PixCheckout from "../components/PixCheckout";
+import CreditCardCheckout from "../components/CreditCardCheckout"; // NOVO!
 
 export default function PrecoPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -164,9 +165,19 @@ export default function PrecoPage() {
             className="bg-cta text-white px-6 py-3 rounded font-semibold"
           />
         </section>
+
+        {/* Checkout Pix */}
         <section id="checkout" className="py-20 bg-[#FFF6F9]">
+          <h3 className="text-center text-xl font-semibold mb-10 text-rose-900">Pagamento via Pix</h3>
           <PixCheckout />
         </section>
+
+        {/* Checkout Cartão de Crédito */}
+        <section id="checkout-card" className="py-20 bg-[#FFFBF7]">
+          <h3 className="text-center text-xl font-semibold mb-10 text-rose-900">Pagamento via Cartão de Crédito</h3>
+          <CreditCardCheckout />
+        </section>
+
       </main>
 
       <Footer />

@@ -52,7 +52,7 @@ export default function CreditCardCheckout() {
           card_holder_name: formData.cardHolderName,
           cpf: formData.cpf.replace(/\D/g, ''),
           email: formData.email,
-          amount: 1000, // R$10,00 em centavos
+          amount: 49700, // R$497,00 em centavos
           installments: formData.installments,
         }),
       });

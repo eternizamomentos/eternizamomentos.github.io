@@ -216,8 +216,12 @@ export default function CreditCardCheckout() {
     } catch (err: unknown) {
       console.error(err);
       // Observação: tokens expiram em ~60s; se o usuário demorar, pode falhar aqui.
-      const msg = String(err?.message || err || 'Erro inesperado. Tente novamente.');
-      setResult({ success: false, message: msg });
+      const msg 
+        typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message?: unknown }).message)
+          : "";
+      
+      setResult({ success: false, message: msg || "Erro inesperado. Tente novamente." });
     } finally {
       setLoading(false);
     }

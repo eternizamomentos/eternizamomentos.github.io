@@ -213,7 +213,7 @@ export default function CreditCardCheckout() {
         state: '',
         installments: 1,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       // Observação: tokens expiram em ~60s; se o usuário demorar, pode falhar aqui.
       const msg = String(err?.message || err || 'Erro inesperado. Tente novamente.');

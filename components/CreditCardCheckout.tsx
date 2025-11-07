@@ -1,27 +1,21 @@
-// components/CreditCardCheckout.tsx
-// PRODUÇÃO / LIVE — Fluxo PCI-safe Pagar.me v5 (PSP):
-// 1) Front tokeniza o cartão em /core/v5/tokens?appId=pk_...
-// 2) Envia card_token + customer/phone/address ao Worker /api/pagarme/credit-card
-// ⚠️ NÃO mexe no PIX.
-
 import React, { useState } from 'react';
 
 export type CreditCardFormData = {
   cardNumber: string;
   cardHolderName: string;
-  expiryMonth: string; // "MM"
-  expiryYear: string;  // "YY"
+  expiryMonth: string;  // "MM"
+  expiryYear: string;   // "YY"
   cvv: string;
 
   cpf: string;
   email: string;
-  phone: string;       // ex: "11999999999"
+  phone: string;        // ex: "11999999999"
 
-  zipCode: string;     // "00000000"
+  zipCode: string;      // "00000000"
   addressLine1: string;
   addressLine2: string;
   city: string;
-  state: string;       // "SP"
+  state: string;        // "SP"
 
   installments: number;
 };
@@ -62,7 +56,7 @@ function luhnValid(card: string): boolean {
   let sum = 0;
   let alt = false;
   for (let i = digits.length - 1; i >= 0; i--) {
-    let n = digits.charCodeAt(i) - 48; // '0' => 48
+    let n = digits.charCodeAt(i) - 48;
     if (alt) {
       n *= 2;
       if (n > 9) n -= 9;
@@ -92,7 +86,7 @@ function expiryNotPast(mm: string, yy: string): boolean {
   return true;
 }
 
-/** Extrai uma mensagem amigável de erro de formatos comuns retornados pela API v5 */
+/** Extrai uma mensagem amigável de erro de formatos comuns retornados pela API v5 da Pagar.me */
 function extractPagarmeMessage(data: unknown): string | null {
   if (typeof data !== 'object' || data === null) return null;
   const obj = data as PagarmeErrorShape;
@@ -119,7 +113,6 @@ function extractPagarmeMessage(data: unknown): string | null {
   return null;
 }
 
-// ========== Componente ==========
 export default function CreditCardCheckout() {
   const [formData, setFormData] = useState<CreditCardFormData>({
     cardNumber: '',
@@ -160,7 +153,7 @@ export default function CreditCardCheckout() {
   // ======== Validação local antes da tokenização ========
   function validateBeforeToken(): string | null {
     if (!luhnValid(formData.cardNumber)) return 'Número do cartão inválido.';
-    if (!monthValid(formData.expiryMonth)) return 'Mês de validade inválido (01-12).';
+    if (!monthValid(formData.expiryMonth)) return 'Mês de validade inválido (01‑12).';
     if (!expiryNotPast(formData.expiryMonth, formData.expiryYear)) return 'Cartão vencido.';
     if (!/^\d{3,4}$/.test(formData.cvv)) return 'CVV inválido.';
 
@@ -178,8 +171,8 @@ export default function CreditCardCheckout() {
   }
 
   // ======== Tokenização — PCI‑safe ========
-  async function tokenizeCard(): Promise<{ id: string }> {
-    const publicKey = 'pk_npw0nlocMDsRPKBg'; // 🔐 Chave pública inserida diretamente
+  async function tokenizeCardAndGetCardId(): Promise<string> {
+    const publicKey = 'pk_npw0nlocMDsRPKBg'; // ⬅️ INSERIR sua chave pública real
 
     const number = onlyDigits(formData.cardNumber);
     const expMonth = twoChars(formData.expiryMonth);
@@ -212,39 +205,28 @@ export default function CreditCardCheckout() {
 
     const data: PagarmeTokenResponse = JSON.parse(text);
 
-    let tokenId: string | null = null;
-    if (typeof data === 'object' && data !== null) {
-      if ('id' in data && typeof data.id === 'string') tokenId = data.id;
-      else if ('token' in data && typeof (data as { token: unknown }).token === 'string')
-        tokenId = (data as { token: string }).token;
-      else if (
-        'card' in data &&
-        typeof data.card === 'object' &&
-        data.card !== null &&
-        'id' in (data.card as Record<string, unknown>) &&
-        typeof (data.card as Record<string, unknown>).id === 'string'
-      ) {
-        tokenId = (data.card as { id: string }).id;
-      }
+    // Obtém card_id
+    const card_id = (data?.card as { id?: string })?.id;
+    if (!card_id) {
+      throw new Error('Não foi possível obter card_id a partir da tokenização.');
     }
 
-    if (!tokenId) throw new Error('Token de cartão não retornado pela API.');
-    return { id: tokenId };
+    return card_id;
   }
 
   // ======== Chamada ao Worker (criação do pedido) ========
-  async function sendToWorker(card_token: string): Promise<ApiResponse> {
+  async function sendToWorker(card_id: string): Promise<ApiResponse> {
     const cleanCpf = onlyDigits(formData.cpf);
     const cleanPhone = onlyDigits(formData.phone);
     const country_code = '55';
     const area_code = cleanPhone.slice(0, 2) || '00';
     const number = cleanPhone.slice(2) || '000000000';
 
-    // PRODUÇÃO: valor em centavos (ajuste conforme)
-    const amount = 10000; // R$ 100,00
+    // Valor em centavos — ajuste conforme seu plano/preço
+    const amount = 10000; // R$ 100,00 por exemplo
 
     const payload = {
-      card_token,
+      card_id, // ✅ Card ID enviado ao backend
       amount,
       installments: formData.installments,
       description: 'Música personalizada Studio Art Hub',
@@ -255,7 +237,9 @@ export default function CreditCardCheckout() {
         type: 'individual' as const,
         document: cleanCpf,
         document_type: 'CPF' as const,
-        phones: { mobile_phone: { country_code, area_code, number } },
+        phones: {
+          mobile_phone: { country_code, area_code, number },
+        },
         address: {
           line_1: formData.addressLine1,
           line_2: formData.addressLine2,
@@ -276,24 +260,25 @@ export default function CreditCardCheckout() {
       }
     );
 
-    let parsed: unknown = null;
+    let parsed: unknown;
     try {
       parsed = await res.json();
     } catch {
       parsed = { ok: false, message: 'Resposta inválida do servidor.' } as ApiResponse;
     }
 
-    const data = (typeof parsed === 'object' && parsed !== null
+    const data: ApiResponse = typeof parsed === 'object' && parsed !== null
       ? (parsed as ApiResponse)
-      : { ok: false }) as ApiResponse;
+      : { ok: false };
 
-    if (!res.ok || !data?.ok) {
+    if (!res.ok || !data.ok) {
       const friendly =
         extractPagarmeMessage(parsed) ??
         data.message ??
         `Falha ao processar pagamento (HTTP ${res.status}).`;
       return { ok: false, message: friendly, error: parsed };
     }
+
     return data;
   }
 
@@ -310,8 +295,8 @@ export default function CreditCardCheckout() {
         return;
       }
 
-      const { id: card_token } = await tokenizeCard();
-      const api = await sendToWorker(card_token);
+      const card_id = await tokenizeCardAndGetCardId();
+      const api = await sendToWorker(card_id);
 
       if (api.ok && api.status === 'paid') {
         setResult({ success: true, message: 'Pagamento aprovado com sucesso! 🎉' });
@@ -340,10 +325,9 @@ export default function CreditCardCheckout() {
       }
     } catch (err: unknown) {
       console.error(err);
-      const msg =
-        typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message?: unknown }).message)
-          : 'Erro inesperado. Tente novamente.';
+      const msg = typeof err === 'object' && err !== null && 'message' in err
+        ? String((err as { message?: unknown }).message)
+        : 'Erro inesperado. Tente novamente.';
       setResult({ success: false, message: msg });
     } finally {
       setLoading(false);
@@ -352,13 +336,9 @@ export default function CreditCardCheckout() {
 
   // ======== UI ========
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-md mx-auto bg-white shadow-md rounded-md p-6 space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto bg-white shadow-md rounded-md p-6 space-y-4">
       <h2 className="text-xl font-semibold text-gray-800">Pagamento com Cartão</h2>
 
-      {/* Dados do cartão */}
       <input
         type="text"
         name="cardNumber"
@@ -418,7 +398,6 @@ export default function CreditCardCheckout() {
         required
       />
 
-      {/* Dados do comprador (PSP exige customer completo) */}
       <input
         type="text"
         name="cpf"
@@ -452,7 +431,6 @@ export default function CreditCardCheckout() {
         required
       />
 
-      {/* Endereço (PSP exige) */}
       <input
         type="text"
         name="zipCode"
@@ -536,7 +514,6 @@ export default function CreditCardCheckout() {
         </div>
       )}
 
-      {/* Dica de UX sobre token expirar */}
       <p className="text-xs text-gray-500 mt-2">
         Dica: finalize o pagamento em até 1 minuto após inserir os dados do cartão. O token expira rapidamente.
       </p>

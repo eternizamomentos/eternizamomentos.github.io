@@ -1,8 +1,9 @@
 // components/CreditCardCheckout.tsx
 // PRODUÇÃO / LIVE — Fluxo PCI-safe Pagar.me v5 (PSP):
-// 1) Front tokeniza cartão em /core/v5/tokens?appId=pk_live...
+// 1) Front tokeniza cartão em /core/v5/tokens?appId=pk_...
 // 2) Envia card_token + customer/phone/address ao Worker /api/pagarme/credit-card
-// 3) Worker cria customer, converte card_token→card_id e cria /orders (cartão)
+// 3) Worker cria customer/card/order (cartão)
+// ⚠️ Não mexe no PIX.
 
 import { useState } from 'react';
 
@@ -33,11 +34,48 @@ type ApiResponse = {
   error?: unknown;
 };
 
+type PagarmeErrorItem = { message?: string } | Record<string, unknown>;
+type PagarmeErrorShape =
+  | { message?: string }
+  | { error?: { message?: string } }
+  | { errors?: PagarmeErrorItem[] }
+  | Record<string, unknown>;
+
 function onlyDigits(v: string) {
   return v.replace(/\D+/g, '');
 }
 function twoChars(v: string) {
   return (v || '').trim().slice(0, 2);
+}
+
+/** Extrai uma mensagem amigável de erro de formatos comuns retornados pela API v5 */
+function extractPagarmeMessage(data: unknown): string | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const obj = data as PagarmeErrorShape;
+
+  // 1) "message" na raiz
+  const rootMsg = (obj as { message?: unknown }).message;
+  if (typeof rootMsg === 'string' && rootMsg.trim()) return rootMsg.trim();
+
+  // 2) "error": { message }
+  const errObj = (obj as { error?: unknown }).error;
+  if (typeof errObj === 'object' && errObj !== null) {
+    const msg = (errObj as { message?: unknown }).message;
+    if (typeof msg === 'string' && msg.trim()) return msg.trim();
+  }
+
+  // 3) "errors": [{ message }, ...]
+  const errs = (obj as { errors?: unknown }).errors;
+  if (Array.isArray(errs)) {
+    for (const item of errs) {
+      if (typeof item === 'object' && item !== null) {
+        const m = (item as { message?: unknown }).message;
+        if (typeof m === 'string' && m.trim()) return m.trim();
+      }
+    }
+  }
+
+  return null;
 }
 
 export default function CreditCardCheckout() {
@@ -76,7 +114,7 @@ export default function CreditCardCheckout() {
     // PRODUÇÃO: chave pública (somente tokenização; segura para estar no front)
     const publicKey =
       process.env.NEXT_PUBLIC_PAGARME_PUBLIC_KEY ||
-      'pk_npw0nlocMDsRPKBg';
+      'pk_npw0nlocMDsRPKBg'; // use sua pk_ pública
 
     if (!publicKey || !publicKey.startsWith('pk_')) {
       throw new Error('Chave pública da Pagar.me inválida ou ausente.');
@@ -100,9 +138,6 @@ export default function CreditCardCheckout() {
       },
     };
 
-    // (Opcional) logs de debug — remova depois de validar
-    // console.log('🔎 Tokenizando cartão com:', body, url);
-
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -111,12 +146,17 @@ export default function CreditCardCheckout() {
 
     const text = await res.text();
     if (!res.ok) {
-      // Exibe causa vinda da Pagar.me (útil para diagnóstico)
+      // Mostra causa vinda da Pagar.me (útil para diagnóstico)
       throw new Error(`Tokenização falhou (${res.status}): ${text}`);
     }
 
-    const data = JSON.parse(text);
-    const tokenId = data?.id || data?.token || data?.card?.id || null;
+    const data = JSON.parse(text) as Record<string, unknown>;
+    const tokenId =
+      (data?.id as string | undefined) ??
+      (data?.token as string | undefined) ??
+      ((data?.card as Record<string, unknown> | undefined)?.id as string | undefined) ??
+      null;
+
     if (!tokenId) throw new Error('Token de cartão não retornado pela API.');
     return { id: tokenId };
   }
@@ -164,13 +204,15 @@ export default function CreditCardCheckout() {
       }
     );
 
-    const data: ApiResponse = await res.json().catch(() => ({ ok: false }));
+    const parsed: unknown = await res.json().catch(() => ({ ok: false } as ApiResponse));
+    const data: ApiResponse =
+      typeof parsed === 'object' && parsed !== null
+        ? (parsed as ApiResponse)
+        : ({ ok: false, message: 'Resposta inválida do servidor.' } as ApiResponse);
+
     if (!res.ok || !data?.ok) {
-      const msg =
-        (data as any)?.error?.message ||
-        (data as any)?.error ||
-        `Falha ao processar pagamento (HTTP ${res.status}).`;
-      return { ok: false, message: msg };
+      const friendly = extractPagarmeMessage(parsed) ?? data.message ?? `Falha ao processar pagamento (HTTP ${res.status}).`;
+      return { ok: false, message: friendly, error: parsed };
     }
     return data;
   }
@@ -208,11 +250,10 @@ export default function CreditCardCheckout() {
           installments: 1,
         });
       } else {
-        // Mensagem clara quando não for paid (ex: pending/failed)
         const readable =
           api.status === 'pending'
             ? 'Pagamento pendente de confirmação do emissor.'
-            : 'Pagamento recusado ou não autorizado.';
+            : api.message || 'Pagamento recusado ou não autorizado.';
         setResult({ success: false, message: readable });
       }
     } catch (err: unknown) {

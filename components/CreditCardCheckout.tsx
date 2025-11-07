@@ -71,7 +71,7 @@ export default function CreditCardCheckout() {
   async function tokenizeCard(): Promise<{ id: string }> {
     // Doc oficial: /core/v5/tokens usa public_key via ?appId=...
     // Somente Content-Type, sem Authorization.  (ref: docs)
-    const publicKey = process.env.NEXT_PUBLIC_PAGARME_PUBLIC_KEY;
+    const publicKey = process.env.NEXT_PUBLIC_PAGARME_PUBLIC_KEY || 'pk_npw0nlocMDsRPKBg';
     if (!publicKey) {
       throw new Error('Chave pública da Pagar.me ausente (NEXT_PUBLIC_PAGARME_PUBLIC_KEY).');
     }

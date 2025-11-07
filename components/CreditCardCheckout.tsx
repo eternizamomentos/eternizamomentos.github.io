@@ -179,10 +179,7 @@ export default function CreditCardCheckout() {
 
   // ======== Tokenização — PCI‑safe ========
   async function tokenizeCard(): Promise<{ id: string }> {
-    const publicKey = process.env.NEXT_PUBLIC_PAGARME_PUBLIC_KEY;
-    if (!publicKey || !publicKey.startsWith('pk_')) {
-      throw new Error('Chave pública da Pagar.me inválida ou ausente (NEXT_PUBLIC_PAGARME_PUBLIC_KEY).');
-    }
+    const publicKey = 'pk_npw0nlocMDsRPKBg'; // 🔐 Chave pública inserida diretamente
 
     const number = onlyDigits(formData.cardNumber);
     const expMonth = twoChars(formData.expiryMonth);

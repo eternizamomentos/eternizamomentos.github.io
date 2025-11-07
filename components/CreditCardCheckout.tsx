@@ -1,8 +1,8 @@
 // components/CreditCardCheckout.tsx
-// Integração PCI-safe com Pagar.me v5 (PSP):
-// 1) Front tokeniza o cartão via POST /core/v5/tokens?appId=<PUBLIC_KEY> (somente Content-Type).
-// 2) Envia card_token + customer/address/phone ao Worker /api/pagarme/credit-card.
-// 3) Worker cria o pedido em /core/v5/orders (sem tocar no PIX).
+// PRODUÇÃO / LIVE — Fluxo PCI-safe Pagar.me v5 (PSP):
+// 1) Front tokeniza cartão em /core/v5/tokens?appId=pk_live...
+// 2) Envia card_token + customer/phone/address ao Worker /api/pagarme/credit-card
+// 3) Worker cria customer, converte card_token→card_id e cria /orders (cartão)
 
 import { useState } from 'react';
 
@@ -26,12 +26,16 @@ export type CreditCardFormData = {
   installments: number;
 };
 
-type ApiResult = { ok: boolean; message?: string };
+type ApiResponse = {
+  ok: boolean;
+  status?: string;        // 'paid' | 'pending' | 'failed' | ...
+  message?: string;
+  error?: unknown;
+};
 
 function onlyDigits(v: string) {
   return v.replace(/\D+/g, '');
 }
-
 function twoChars(v: string) {
   return (v || '').trim().slice(0, 2);
 }
@@ -69,11 +73,13 @@ export default function CreditCardCheckout() {
   };
 
   async function tokenizeCard(): Promise<{ id: string }> {
-    // Doc oficial: /core/v5/tokens usa public_key via ?appId=...
-    // Somente Content-Type, sem Authorization.  (ref: docs)
-    const publicKey = process.env.NEXT_PUBLIC_PAGARME_PUBLIC_KEY || 'pk_npw0nlocMDsRPKBg';
-    if (!publicKey) {
-      throw new Error('Chave pública da Pagar.me ausente (NEXT_PUBLIC_PAGARME_PUBLIC_KEY).');
+    // PRODUÇÃO: chave pública (somente tokenização; segura para estar no front)
+    const publicKey =
+      process.env.NEXT_PUBLIC_PAGARME_PUBLIC_KEY ||
+      'pk_npw0nlocMDsRPKBg';
+
+    if (!publicKey || !publicKey.startsWith('pk_')) {
+      throw new Error('Chave pública da Pagar.me inválida ou ausente.');
     }
 
     const number = onlyDigits(formData.cardNumber);
@@ -83,68 +89,61 @@ export default function CreditCardCheckout() {
 
     const url = `https://api.pagar.me/core/v5/tokens?appId=${encodeURIComponent(publicKey)}`;
 
-    // IMPORTANTE: billing address não é tokenizado; será enviado no /orders. (ref: docs)
     const body = {
       type: 'card',
       card: {
         number,
         holder_name: formData.cardHolderName,
         exp_month: expMonth,
-        exp_year: expYear,
+        exp_year: expYear, // 4 dígitos, ex: "2030"
         cvv: formData.cvv,
       },
     };
 
+    // (Opcional) logs de debug — remova depois de validar
+    // console.log('🔎 Tokenizando cartão com:', body, url);
+
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(body),
     });
 
     const text = await res.text();
     if (!res.ok) {
+      // Exibe causa vinda da Pagar.me (útil para diagnóstico)
       throw new Error(`Tokenização falhou (${res.status}): ${text}`);
     }
 
-    // A resposta possui o token do cartão (temporário ~60s e single-use).
     const data = JSON.parse(text);
-    // Em geral, o token vem em data.id ou data.token/id; normalizamos para "id".
     const tokenId = data?.id || data?.token || data?.card?.id || null;
-    if (!tokenId) {
-      throw new Error('Token de cartão não retornado pela API.');
-    }
+    if (!tokenId) throw new Error('Token de cartão não retornado pela API.');
     return { id: tokenId };
   }
 
-  async function sendToWorker(card_token: string): Promise<ApiResult> {
-    // PSP exige customer completo (telefone e endereço) no pedido.
+  async function sendToWorker(card_token: string): Promise<ApiResponse> {
     const cleanCpf = onlyDigits(formData.cpf);
     const cleanPhone = onlyDigits(formData.phone);
     const country_code = '55';
     const area_code = cleanPhone.slice(0, 2) || '00';
     const number = cleanPhone.slice(2) || '000000000';
 
-    // Valor de teste (R$ 10,00). Ajuste para 49700 quando for go-live.
-    const amount = 1000;
+    // PRODUÇÃO: valor real em centavos
+    const amount = 1000; // R$ 10,00
 
     const payload = {
-      // Importante para PSP: /orders deverá usar card_id; o Worker pode,
-      // se necessário, converter card_token -> card_id criando o cartão na carteira.
       card_token,
       amount,
       installments: formData.installments,
       description: 'Música personalizada Studio Art Hub',
       item_code: 'MUSICA_PERSONALIZADA_001',
-
       customer: {
         name: formData.cardHolderName,
         email: formData.email,
         type: 'individual',
         document: cleanCpf,
         document_type: 'CPF',
-        phones: {
-          mobile_phone: { country_code, area_code, number },
-        },
+        phones: { mobile_phone: { country_code, area_code, number } },
         address: {
           line_1: formData.addressLine1,
           line_2: formData.addressLine2,
@@ -161,20 +160,19 @@ export default function CreditCardCheckout() {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Nota: o Worker usa Authorization Basic com secret_key no server (seguro).
         body: JSON.stringify(payload),
       }
     );
 
-    const data = await res.json().catch(() => ({}));
+    const data: ApiResponse = await res.json().catch(() => ({ ok: false }));
     if (!res.ok || !data?.ok) {
       const msg =
-        data?.error?.message ||
-        data?.error ||
-        `Falha ao processar pagamento: HTTP ${res.status}`;
+        (data as any)?.error?.message ||
+        (data as any)?.error ||
+        `Falha ao processar pagamento (HTTP ${res.status}).`;
       return { ok: false, message: msg };
     }
-    return { ok: true, message: 'Pagamento aprovado com sucesso! 🎉' };
+    return data;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -183,44 +181,46 @@ export default function CreditCardCheckout() {
     setResult(null);
 
     try {
-      // 1) Tokenizar cartão via /tokens (public_key via appId)
+      // 1) Tokenizar cartão (produção)
       const { id: card_token } = await tokenizeCard();
 
-      // 2) Enviar card_token + customer/address/phone ao Worker
+      // 2) Enviar ao Worker (produção)
       const api = await sendToWorker(card_token);
 
-      if (!api.ok) {
-        setResult({ success: false, message: api.message || 'Pagamento recusado/ inválido.' });
-        return;
+      // Sucesso real só quando status === 'paid'
+      if (api.ok && api.status === 'paid') {
+        setResult({ success: true, message: 'Pagamento aprovado com sucesso! 🎉' });
+        // Reset
+        setFormData({
+          cardNumber: '',
+          cardHolderName: '',
+          expiryMonth: '',
+          expiryYear: '',
+          cvv: '',
+          cpf: '',
+          email: '',
+          phone: '',
+          zipCode: '',
+          addressLine1: '',
+          addressLine2: '',
+          city: '',
+          state: '',
+          installments: 1,
+        });
+      } else {
+        // Mensagem clara quando não for paid (ex: pending/failed)
+        const readable =
+          api.status === 'pending'
+            ? 'Pagamento pendente de confirmação do emissor.'
+            : 'Pagamento recusado ou não autorizado.';
+        setResult({ success: false, message: readable });
       }
-
-      setResult({ success: true, message: api.message || 'Pagamento aprovado com sucesso! 🎉' });
-
-      // Reset do formulário
-      setFormData({
-        cardNumber: '',
-        cardHolderName: '',
-        expiryMonth: '',
-        expiryYear: '',
-        cvv: '',
-        cpf: '',
-        email: '',
-        phone: '',
-        zipCode: '',
-        addressLine1: '',
-        addressLine2: '',
-        city: '',
-        state: '',
-        installments: 1,
-      });
     } catch (err: unknown) {
       console.error(err);
-      // Observação: tokens expiram em ~60s; se o usuário demorar, pode falhar aqui.
-      const msg = 
-        typeof err === "object" && err !== null && "message" in err
+      const msg =
+        typeof err === 'object' && err !== null && 'message' in err
           ? String((err as { message?: unknown }).message)
-          : "Erro inesperado. Tente novamente.";
-      
+          : 'Erro inesperado. Tente novamente.';
       setResult({ success: false, message: msg });
     } finally {
       setLoading(false);
@@ -395,7 +395,9 @@ export default function CreditCardCheckout() {
       <button
         type="submit"
         disabled={loading}
-        className={`w-full ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'} text-white font-semibold py-2 px-4 rounded transition`}
+        className={`w-full ${
+          loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
+        } text-white font-semibold py-2 px-4 rounded transition`}
       >
         {loading ? 'Processando...' : 'Pagar com Cartão'}
       </button>
@@ -409,11 +411,6 @@ export default function CreditCardCheckout() {
           {result.message}
         </div>
       )}
-
-      {/* Dica de UX sobre token expirar */}
-      <p className="text-xs text-gray-500 mt-2">
-        Dica: finalize o pagamento em até 1 minuto após inserir os dados do cartão. O token expira rapidamente.
-      </p>
     </form>
   );
 }

@@ -241,7 +241,7 @@ export default function CreditCardCheckout() {
     const number = cleanPhone.slice(2) || '000000000';
 
     // PRODUÇÃO: valor em centavos (ajuste conforme)
-    const amount = 1000; // R$ 10,00
+    const amount = 10000; // R$ 100,00
 
     const payload = {
       card_token,

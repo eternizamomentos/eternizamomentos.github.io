@@ -221,16 +221,27 @@ export default function CreditCardCheckout() {
       throw new Error(`Tokenização falhou (${res.status}): ${text}`);
     }
 
-    const data: PagarmeTokenResponse = JSON.parse(text);
-    const tokenId =
-      (data?.id as string | undefined) ??
-      (data?.token as string | undefined) ??
-      (data?.card?.id as string | undefined) ??
-      null;
+const data: PagarmeTokenResponse = JSON.parse(text);
 
-    if (!tokenId) throw new Error('Token de cartão não retornado pela API.');
-    return { id: tokenId };
+// Extrai token de forma segura
+let tokenId: string | null = null;
+if (typeof data === 'object' && data !== null) {
+  if ('id' in data && typeof data.id === 'string') tokenId = data.id;
+  else if ('token' in data && typeof (data as { token: unknown }).token === 'string')
+    tokenId = (data as { token: string }).token;
+  else if (
+    'card' in data &&
+    typeof data.card === 'object' &&
+    data.card !== null &&
+    'id' in (data.card as Record<string, unknown>) &&
+    typeof (data.card as Record<string, unknown>).id === 'string'
+  ) {
+    tokenId = (data.card as { id: string }).id;
   }
+}
+
+if (!tokenId) throw new Error('Token de cartão não retornado pela API.');
+return { id: tokenId };
 
   // ======== Chamada ao Worker (criação do pedido) ========
   async function sendToWorker(card_token: string): Promise<ApiResponse> {

@@ -9,7 +9,8 @@ export default function Analytics(): React.ReactElement | null {
 
   return (
     <Head>
-      {/* Google Tag Manager (substitua GTM-XXXXXXX pelo seu ID real quando tiver) */}
+    </Head>
+          {/* Google Tag Manager (substitua GTM-XXXXXXX pelo seu ID real quando tiver) */}
       <Script
         id="ga"
         strategy="afterInteractive"
@@ -23,6 +24,5 @@ export default function Analytics(): React.ReactElement | null {
           `,
         }}
       />
-    </Head>
   );
 }

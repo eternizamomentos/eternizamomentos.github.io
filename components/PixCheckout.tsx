@@ -92,7 +92,11 @@ export default function PixCheckout() {
   const traceId = `pix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   // 🔹 logger simples (futuro: envia para Cloudflare/Backend Local)
-  const logEvent = async (step: string, data: Record<string, any> = {}) => {
+  const logEvent = async (
+    step: string,
+    data: Record<string, unknown> = {}
+  ): Promise<void> => {
+
     const payload = {
       trace_id: traceId,
       step,

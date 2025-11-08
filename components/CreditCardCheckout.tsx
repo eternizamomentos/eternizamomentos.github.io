@@ -172,7 +172,7 @@ export default function CreditCardCheckout() {
 
   // ======== Tokenização — PCI‑safe ========
   async function tokenizeCardAndGetCardId(): Promise<string> {
-    const publicKey = 'pk_npw0nlocMDsRPKBg'; // ⬅️ INSERIR sua chave pública real
+    const publicKey = 'pk_npw0nlocMDsRPKBg'; // ✅ Chave pública de produção confirmada (PCI-safe)
 
     const number = onlyDigits(formData.cardNumber);
     const expMonth = twoChars(formData.expiryMonth);

@@ -46,6 +46,7 @@ export default function PrecoPage() {
           name="description"
           content="Descubra quanto custa transformar sua história em música personalizada e emocional."
         />
+        <script src="/js/obs.js" defer></script>
       </Head>
 
       <Header />
@@ -180,13 +181,6 @@ export default function PrecoPage() {
         </section>
         
       </main>
-
-      {/* Carrega o observador global após o carregamento da página */}
-      <script
-        src="/js/obs.js"
-        defer
-        onLoad={() => console.log('✅ obs.js carregado')}
-      ></script>
       
       <Footer />
       

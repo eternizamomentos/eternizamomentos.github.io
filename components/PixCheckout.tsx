@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { createPixOrder } from "../utils/api";
+import { logFrontend } from "../utils/logger"; // 🪵 Novo sistema de logs
 
 // Tipagem explícita para evitar uso de `any`
 type PixTransaction = {
@@ -88,38 +89,13 @@ export default function PixCheckout() {
   setErro(null);
   setPedido(null);
 
-  // 🔹 trace_id único por tentativa
-  const traceId = `pix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-  // 🔹 logger simples (futuro: envia para Cloudflare/Backend Local)
-  const logEvent = async (
-    step: string,
-    data: Record<string, unknown> = {}
-  ): Promise<void> => {
-
-    const payload = {
-      trace_id: traceId,
-      step,
-      ts: new Date().toISOString(),
-      page: "/preco",
-      flow: "pix_checkout",
-      ...data,
-    };
-    console.log("📋 [PIX LOG]", payload);
-    try {
-      // 🔁 se quiser enviar remotamente:
-      await fetch("https://studioarthub-api.rapid-hill-dc23.workers.dev/api/log", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // falha silenciosa no logEvent não interrompe o fluxo
-    }
-  };
-
-  await logEvent("start_click", { status: "pending" });
-
+  // 🪵 LOG: clique no botão
+  logFrontend({
+    step: "pix_click",
+    status: "pending",
+    message: "Usuário clicou em Gerar Pix",
+   }); 
+    
   try {
     const dados = {
       amount: 49700,
@@ -133,37 +109,57 @@ export default function PixCheckout() {
       pix: { expires_in: 3600 },
     };
 
-    await logEvent("request_sent", { status: "sending", payload_preview: dados });
+    // 🪵 LOG: requisição enviada
+    logFrontend({
+      step: "pix_request_sent",
+      status: "pending",
+      meta: { amount: dados.amount },
+    });
 
     const resposta: PixPedido = await createPixOrder(dados);
 
     if (!resposta?.ok) {
-      await logEvent("response_error", {
+      // 🪵 LOG: resposta com erro
+      logFrontend({
+        step: "pix_error",
+        level: "error",
         status: "error",
-        response_preview: resposta,
+        error: resposta?.error || "Erro desconhecido ao gerar Pix",
       });
       throw new Error(resposta?.error || "Erro ao gerar o Pix.");
     }
 
-    await logEvent("response_success", {
-      status: "success",
-      charge_id: resposta?.charge?.id,
-      order_id: resposta?.charge?.last_transaction ? "found_tx" : "no_tx",
-      mode: resposta?.mode,
+    // 🪵 LOG: sucesso
+    logFrontend({
+      step: "pix_success",
+      status: "ok",
+      message: "Pix criado com sucesso",
+      meta: {
+        charge_id: resposta?.charge?.id || null,
+        charge_status: resposta?.charge?.status || null,
+        has_qr: Boolean(resposta?.charge?.last_transaction?.qr_code),
+        expires_at: resposta?.charge?.last_transaction?.expires_at || null,
+      },
     });
 
     setPedido(resposta);
   } catch (err: unknown) {
     const e = err instanceof Error ? err : new Error(String(err));
     console.error("❌ PIX ERROR", e);
-    await logEvent("exception", {
-      status: "failed",
-      message: e.message,
-      stack: e.stack,
+    // 🪵 LOG: exceção
+    logFrontend({
+      step: "pix_error",
+      level: "error",
+      status: "error",
+      error: e.message,
     });
     setErro("Falha ao gerar o Pix. Verifique sua conexão e tente novamente.");
   } finally {
-    await logEvent("finish", { status: "done" });
+    // 🪵 LOG: finalização
+    logFrontend({
+      step: "pix_finish",
+      status: "done",
+    });
     setCarregando(false);
   }
 };
@@ -172,6 +168,11 @@ export default function PixCheckout() {
     try {
       await navigator.clipboard.writeText(copiaECola);
       setErro(null);
+      // 🪵 LOG: copiou Pix
+      logFrontend({
+        step: "pix_copy",
+        status: "ok",
+      });
       const btn = document.getElementById("btn-copiar-pix");
       if (btn) {
         const original = btn.textContent;
@@ -182,6 +183,13 @@ export default function PixCheckout() {
       }
     } catch {
       setErro("Não foi possível copiar o código. Copie manualmente.");
+      // 🪵 LOG: erro ao copiar
+      logFrontend({
+        step: "pix_error",
+        level: "warn",
+        status: "error",
+        error: "clipboard_write_failed",
+      });
     }
   };
 

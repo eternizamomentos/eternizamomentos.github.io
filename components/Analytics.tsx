@@ -1,15 +1,15 @@
 // components/Analytics.tsx
-import Script from "next/script";
 import React from "react";
+import Script from "next/script";
 
 const isProd = process.env.NODE_ENV === "production";
 
 /**
  * Carrega Google Tag Manager somente em produção.
- * Importante: <Script /> deve ficar FORA de <Head>.
- * Dica: o <noscript> recomendado pelo GTM deve ser adicionado em _document.tsx (body).
+ * OBS: <Script /> deve ficar FORA de <Head>.
+ * Se quiser o <noscript> do GTM (iframe), adicione em pages/_document.tsx dentro do <body>.
  */
-export default function Analytics(): JSX.Element | null {
+export default function Analytics(): React.ReactElement | null {
   if (!isProd) return null;
 
   return (

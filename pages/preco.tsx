@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import CTAButton from "../components/CTAButton";
 import PixCheckout from "../components/PixCheckout";
 import CreditCardCheckout from "../components/CreditCardCheckout";
+import Script from "next/script";
 
 export default function PrecoPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -177,7 +178,9 @@ export default function PrecoPage() {
           <h3 className="text-center text-xl font-semibold mb-10 text-rose-900">Pagamento via Cartão de Crédito</h3>
           <CreditCardCheckout />
         </section>
-
+        
+      <Script src="/js/obs.js" strategy="afterInteractive" />
+        
       </main>
 
       <Footer />

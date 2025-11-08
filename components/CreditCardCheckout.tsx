@@ -226,7 +226,7 @@ export default function CreditCardCheckout() {
     const amount = 10000; // R$ 100,00 por exemplo
 
     const payload = {
-      card_id, // ✅ Card ID enviado ao backend
+      card_token: card_id, // ✅ compatível com o backend atualizado
       amount,
       installments: formData.installments,
       description: 'Música personalizada Studio Art Hub',

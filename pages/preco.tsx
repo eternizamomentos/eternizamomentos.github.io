@@ -179,11 +179,11 @@ export default function PrecoPage() {
           <CreditCardCheckout />
         </section>
         
-      <Script src="/js/obs.js" strategy="afterInteractive" />
-        
       </main>
 
       <Footer />
+      
+      <Script src="/js/obs.js" strategy="afterInteractive" />
     </>
   );
 }

@@ -109,8 +109,8 @@ export default function PixCheckout() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-    } catch (_) {
-      /* se falhar, ignora — sem travar UI */
+    } catch {
+      // falha silenciosa no logEvent não interrompe o fluxo
     }
   };
 
@@ -149,12 +149,13 @@ export default function PixCheckout() {
     });
 
     setPedido(resposta);
-  } catch (err: any) {
-    console.error("❌ PIX ERROR", err);
+  } catch (err: unknown) {
+    const e = err instanceof Error ? err : new Error(String(err));
+    console.error("❌ PIX ERROR", e);
     await logEvent("exception", {
       status: "failed",
-      message: err?.message || String(err),
-      stack: err?.stack,
+      message: e.message,
+      stack: e.stack,
     });
     setErro("Falha ao gerar o Pix. Verifique sua conexão e tente novamente.");
   } finally {

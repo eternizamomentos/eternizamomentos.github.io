@@ -4,7 +4,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CTAButton from "../components/CTAButton";
 import PixCheckout from "../components/PixCheckout";
-import CreditCardCheckout from "../components/CreditCardCheckout"; // NOVO!
+import CreditCardCheckout from "../components/CreditCardCheckout";
+import Script from "../js/obs.js";
 
 export default function PrecoPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);

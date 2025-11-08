@@ -1,5 +1,6 @@
 import Head from "next/head";
 import React from "react";
+import Script from "next/script";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -9,7 +10,9 @@ export default function Analytics(): React.ReactElement | null {
   return (
     <Head>
       {/* Google Tag Manager (substitua GTM-XXXXXXX pelo seu ID real quando tiver) */}
-      <script
+      <Script
+        id="ga"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

@@ -54,4 +54,4 @@ window.addEventListener("unhandledrejection", (e) => {
 });
 
 // expõe para uso nos componentes
-window.SAH_OBS = { sendLog, newTraceId, newSpanId };
+window.SAH_OBS = { test: true };

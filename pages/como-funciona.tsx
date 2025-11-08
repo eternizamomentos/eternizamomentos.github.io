@@ -2,6 +2,7 @@ import Head from "next/head";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CTAButton from "../components/CTAButton";
+import Image from "next/image";
 
 export default function ComoFunciona() {
   return (
@@ -111,7 +112,7 @@ export default function ComoFunciona() {
         <section className="py-20 px-6 bg-[#FFFFFF] animate-fade-in">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-10">
             {/* ✅ Imagem SVG atualizada */}
-            <img
+            <Image
               src="/illustrations/ouvinte-emocionado.svg"
               alt="Pessoa emocionada ouvindo música"
               className="w-full md:w-1/2 max-w-sm mx-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-[1.02]"

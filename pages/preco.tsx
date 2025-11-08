@@ -181,9 +181,15 @@ export default function PrecoPage() {
         
       </main>
 
+      {/* Carrega o observador global após o carregamento da página */}
+      <script
+        src="/js/obs.js"
+        defer
+        onLoad={() => console.log('✅ obs.js carregado')}
+      ></script>
+      
       <Footer />
       
-      <Script src="/js/obs.js" strategy="afterInteractive" />
     </>
   );
 }

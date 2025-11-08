@@ -225,12 +225,16 @@ export default function CreditCardCheckout() {
     // Valor em centavos — ajuste conforme seu plano/preço
     const amount = 10000; // R$ 100,00 por exemplo
 
+    const sessionId = crypto.randomUUID(); // ou outro gerador de UUID
+    const userIp = ''; // opcional: pode obter via serviço externo se necessário
     const payload = {
       card_token: card_id, // ✅ compatível com o backend atualizado
       amount,
       installments: Math.min(Math.max(1, formData.installments), 3),
       description: 'Música personalizada Studio Art Hub',
       item_code: 'MUSICA_PERSONALIZADA_001',
+      session_id: sessionId,
+      ip: userIp,
       customer: {
         name: formData.cardHolderName,
         email: formData.email,

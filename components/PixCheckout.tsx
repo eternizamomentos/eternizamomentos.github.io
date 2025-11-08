@@ -84,37 +84,85 @@ export default function PixCheckout() {
   }, [expiresAt]);
 
   const gerarPix = async () => {
-    setCarregando(true);
-    setErro(null);
-    setPedido(null);
+  setCarregando(true);
+  setErro(null);
+  setPedido(null);
+
+  // 🔹 trace_id único por tentativa
+  const traceId = `pix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // 🔹 logger simples (futuro: envia para Cloudflare/Backend Local)
+  const logEvent = async (step: string, data: Record<string, any> = {}) => {
+    const payload = {
+      trace_id: traceId,
+      step,
+      ts: new Date().toISOString(),
+      page: "/preco",
+      flow: "pix_checkout",
+      ...data,
+    };
+    console.log("📋 [PIX LOG]", payload);
     try {
-      const dados = {
-        amount: 49700,
-        description: "Música personalizada Studio Art Hub",
-        customer: {
-          name: "Josué Silva Galvão",
-          email: "info@studioarthub.com",
-          document: "89173511234",
-          phone: { country_code: "55", area_code: "96", number: "991451428" },
-        },
-        pix: { expires_in: 3600 },
-      };
-
-      const resposta: PixPedido = await createPixOrder(dados);
-
-      if (!resposta?.ok) {
-        throw new Error(resposta?.error || "Erro ao gerar o Pix.");
-      }
-
-      setPedido(resposta);
-    } catch (err) {
-      console.error(err);
-      setErro("Falha ao gerar o Pix. Verifique sua conexão e tente novamente.");
-    } finally {
-      setCarregando(false);
+      // 🔁 se quiser enviar remotamente:
+      await fetch("https://studioarthub-api.rapid-hill-dc23.workers.dev/api/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (_) {
+      /* se falhar, ignora — sem travar UI */
     }
   };
 
+  await logEvent("start_click", { status: "pending" });
+
+  try {
+    const dados = {
+      amount: 49700,
+      description: "Música personalizada Studio Art Hub",
+      customer: {
+        name: "Josué Silva Galvão",
+        email: "info@studioarthub.com",
+        document: "89173511234",
+        phone: { country_code: "55", area_code: "96", number: "991451428" },
+      },
+      pix: { expires_in: 3600 },
+    };
+
+    await logEvent("request_sent", { status: "sending", payload_preview: dados });
+
+    const resposta: PixPedido = await createPixOrder(dados);
+
+    if (!resposta?.ok) {
+      await logEvent("response_error", {
+        status: "error",
+        response_preview: resposta,
+      });
+      throw new Error(resposta?.error || "Erro ao gerar o Pix.");
+    }
+
+    await logEvent("response_success", {
+      status: "success",
+      charge_id: resposta?.charge?.id,
+      order_id: resposta?.charge?.last_transaction ? "found_tx" : "no_tx",
+      mode: resposta?.mode,
+    });
+
+    setPedido(resposta);
+  } catch (err: any) {
+    console.error("❌ PIX ERROR", err);
+    await logEvent("exception", {
+      status: "failed",
+      message: err?.message || String(err),
+      stack: err?.stack,
+    });
+    setErro("Falha ao gerar o Pix. Verifique sua conexão e tente novamente.");
+  } finally {
+    await logEvent("finish", { status: "done" });
+    setCarregando(false);
+  }
+};
+  
   const copiarCodigo = async () => {
     try {
       await navigator.clipboard.writeText(copiaECola);

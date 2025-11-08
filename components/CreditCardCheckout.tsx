@@ -228,7 +228,7 @@ export default function CreditCardCheckout() {
     const payload = {
       card_token: card_id, // ✅ compatível com o backend atualizado
       amount,
-      installments: formData.installments,
+      installments: Math.min(Math.max(1, formData.installments), 3),
       description: 'Música personalizada Studio Art Hub',
       item_code: 'MUSICA_PERSONALIZADA_001',
       customer: {

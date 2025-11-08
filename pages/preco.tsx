@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 import CTAButton from "../components/CTAButton";
 import PixCheckout from "../components/PixCheckout";
 import CreditCardCheckout from "../components/CreditCardCheckout";
-import Script from "next/script";
 
 export default function PrecoPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -46,7 +45,6 @@ export default function PrecoPage() {
           name="description"
           content="Descubra quanto custa transformar sua história em música personalizada e emocional."
         />
-        <script src="/js/obs.js" defer></script>
       </Head>
 
       <Header />

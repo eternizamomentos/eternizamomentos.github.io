@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 
 type LogLevel = "info" | "warn" | "error";
+type LogStatus = "ok" | "error" | "pending" | "done";
 type LogStep =
   | "pix_click"
   | "pix_request_sent"
@@ -10,12 +11,13 @@ type LogStep =
   | "pix_timeout"
   | "pix_copy"
   | "pix_view"
+  | "pix_finish"
   | "exception";
 
 export type FrontLog = {
   step: LogStep;
   level?: LogLevel;
-  status?: "ok" | "error" | "pending";
+  status?: LogStatus;
   flow?: "pix_checkout";
   message?: string;
   error?: string;

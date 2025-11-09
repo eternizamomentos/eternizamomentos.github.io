@@ -1,1 +1,101 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charSet="utf-8" data-next-head=""/><meta name="viewport" content="width=device-width" data-next-head=""/><meta name="theme-color" content="#F7F5F2"/><meta name="robots" content="index,follow"/><link rel="icon" href="/favicon.ico"/><link rel="apple-touch-icon" href="/apple-touch-icon.png"/><link rel="canonical" href="https://www.studioarthub.com/"/><link rel="preload" href="./_next/static/css/40fdf917be7c7892.css" as="style"/><link rel="stylesheet" href="./_next/static/css/40fdf917be7c7892.css" data-n-g=""/><noscript data-n-css=""></noscript><script defer="" noModule="" src="./_next/static/chunks/polyfills-42372ed130431b0a.js"></script><script src="./_next/static/chunks/webpack-368566243c82eec5.js" defer=""></script><script src="./_next/static/chunks/framework-acd67e14855de5a2.js" defer=""></script><script src="./_next/static/chunks/main-7d23e3d72a2afe27.js" defer=""></script><script src="./_next/static/chunks/pages/_app-bf31568b6fad7ace.js" defer=""></script><script src="./_next/static/chunks/230-6f6dbb566cd5139b.js" defer=""></script><script src="./_next/static/chunks/pages/index-ccd69ae0105d2fbe.js" defer=""></script><script src="./_next/static/7PFOFvD07j77d6R_sCRpu/_buildManifest.js" defer=""></script><script src="./_next/static/7PFOFvD07j77d6R_sCRpu/_ssgManifest.js" defer=""></script></head><body><div id="__next"></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/","query":{},"buildId":"7PFOFvD07j77d6R_sCRpu","assetPrefix":".","nextExport":true,"autoExport":true,"isFallback":false,"scriptLoader":[]}</script></body></html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Studio Art Hub — Modo manutenção ativo temporariamente. Em breve, o novo site completo." />
+  <title>Studio Art Hub | Em manutenção</title>
+  <style>
+    :root {
+      --navy: #101828;
+      --rose: #E9B8C7;
+      --gold: #E7B75F;
+      --cta: #C7355D;
+      --cta-hover: #A62C4D;
+      --bg: #FFFBF7;
+      --text: #0B1324;
+      --muted: #667085;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    main.container-page {
+      max-width: 600px;
+      width: 100%;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      color: var(--navy);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    a.cta {
+      display: inline-block;
+      background: var(--cta);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    a.cta:hover {
+      background: var(--cta-hover);
+    }
+
+    footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container-page">
+    <h1>🎵 Studio Art Hub</h1>
+    <p>
+      Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.<br />
+      Em breve, você poderá <em>transformar sua história em música</em> com nossa criação híbrida — humana + IA <strong>Donna Pro®</strong>.
+    </p>
+    <a
+      class="cta"
+      href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AA.%20%0A%C3%89%20pra%20uma%20ocasi%C3%A3o%20muito%20especial."
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Fale conosco no WhatsApp
+    </a>
+    <footer>
+      © <span id="year"></span> Studio Art Hub · Todos os direitos reservados
+    </footer>
+  </main>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

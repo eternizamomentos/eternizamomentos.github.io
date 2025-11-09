@@ -1,6 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
+interface LogMeta {
+  email?: string;
+  amount?: number;
+  order_id?: string;
+  charge_id?: string;
+  ip?: string;
+  session_id?: string;
+  [key: string]: string | number | undefined;
+}
+
 interface LogEntry {
   timestamp: string;
   step: string;
@@ -8,7 +18,7 @@ interface LogEntry {
   status: string;
   message?: string;
   error?: string;
-  meta?: Record<string, any>;
+  meta?: LogMeta;
 }
 
 export default function LogsPanel() {

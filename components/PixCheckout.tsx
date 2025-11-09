@@ -98,7 +98,7 @@ export default function PixCheckout() {
     
   try {
     const dados = {
-      amount: 49700,
+      amount: 100,
       description: "Música personalizada Studio Art Hub",
       customer: {
         name: "Josué Silva Galvão",

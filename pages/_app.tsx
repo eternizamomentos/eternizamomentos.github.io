@@ -1,38 +1,37 @@
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
 import { useEffect, useState } from "react";
-import CTAButton from "../components/CTAButton"; // ✅ Import correto no topo
+import CTAButton from "../components/CTAButton"; // ✅ Import do botão de contato
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // 🔍 Verifica parâmetros e contexto atual
     const params = new URLSearchParams(window.location.search);
-    const bypass = params.get("preview");
+    const bypass = params.get("preview"); // exemplo: ?preview=1
     const isLocal = window.location.hostname === "localhost";
+    const isLogsPanel = window.location.pathname.startsWith("/logs-preview");
 
-    if (!bypass) {
-      if (isLocal) {
-        setIsAllowed(false);
-        return;
-      }
-      // Permite acessar o painel de logs sem redirecionar
-      if (window.location.pathname.startsWith("/logs-preview")) {
-        console.log("🔓 Acesso permitido: logs-preview");
-      } else {
-        window.location.replace("/maintenance.html");
-      }
-        return;
-      }
-    } else {
+    // ✅ Libera o acesso em três situações:
+    // 1. Se tem ?preview=1 (modo de visualização)
+    // 2. Se está rodando localmente (localhost)
+    // 3. Se é o painel de logs (rota especial)
+    if (bypass || isLocal || isLogsPanel) {
+      console.log("🔓 Acesso permitido ao site/painel");
       setIsAllowed(true);
+    } else {
+      console.log("🔒 Redirecionando para manutenção...");
+      window.location.replace("/maintenance.html");
+      setIsAllowed(false);
     }
   }, []);
 
-  if (isAllowed === null) return null; // evita flash
+  // ⏳ Evita flash de conteúdo enquanto decide permissão
+  if (isAllowed === null) return null;
 
+  // 🚧 Página de manutenção inline (mostrada só se local sem preview)
   if (isAllowed === false) {
-    // Renderiza a página de manutenção local (versão inline)
     return (
       <div
         style={{
@@ -67,14 +66,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
               lineHeight: 1.6,
             }}
           >
-            Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.
+            Estamos <strong>afinando os últimos instrumentos</strong> do nosso
+            novo site.
             <br />
             Em breve, você poderá{" "}
-            <em>transformar sua história em música</em> com nossa criação híbrida — humana + IA{" "}
-            <strong>Donna Pro®</strong>.
+            <em>transformar sua história em música</em> com nossa criação híbrida
+            — humana + IA <strong>Donna Pro®</strong>.
           </p>
 
-          {/* ✅ Aqui usamos o CTAButton normalmente */}
+          {/* ✅ Botão de contato (usando componente real) */}
           <CTAButton
             href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs."
             label="Fale conosco no WhatsApp"
@@ -88,13 +88,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
               fontSize: "0.9rem",
             }}
           >
-            © {new Date().getFullYear()} Studio Art Hub · Todos os direitos reservados
+            © {new Date().getFullYear()} Studio Art Hub · Todos os direitos
+            reservados
           </footer>
         </main>
       </div>
     );
   }
 
-  // Se permitido → render normal
+  // 🚀 Se permitido → render normal
   return <Component {...pageProps} />;
 }

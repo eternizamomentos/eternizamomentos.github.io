@@ -347,6 +347,9 @@ export default function LogsPanel() {
           Recarregar
         </button>
       </div>
+      <footer className="mt-6 text-center text-xs text-gray-400">
+  Studio Art Hub — Painel de Logs v2.4.1 • Build {new Date().toLocaleDateString("pt-BR")}
+      </footer>
     </div>
   );
 }

@@ -2,9 +2,12 @@
 const nextConfig = {
   output: 'export',
   images: { unoptimized: true },
-  basePath: '', // nada aqui!
-  assetPrefix: '.', // força caminhos relativos
-  trailingSlash: true, // garante compatibilidade com export estático
+
+  // ✅ aponta os assets para o diretório raiz (não relativo à página)
+  basePath: '',
+  assetPrefix: '/',
+
+  trailingSlash: true,
 };
 
 export default nextConfig;

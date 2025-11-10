@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === 'production';
-// Produção oficial no domínio raiz (www.studioarthub.com):
-// → SEM basePath / assetPrefix
-module.exports = {
-  output: 'export',
-  reactStrictMode: true,
-  trailingSlash: true, // ajuda no GH Pages
-  images: { unoptimized: true },
-  // NADA de basePath/assetPrefix em produção oficial!
+const nextConfig = {
+  output: 'export', // Garante que o build seja estático
+  basePath: '', // deixe vazio se estiver usando domínio próprio no CNAME
+  images: {
+    unoptimized: true, // evita erro de otimização no GitHub Pages
+  },
 };
+
+export default nextConfig;

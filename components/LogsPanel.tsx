@@ -121,18 +121,43 @@ export default function LogsPanel() {
   }
 
   function copyLogReadable(log: LogEntry): void {
+    const errorMessage = extractErrorMessage(log.error);
+    let errorDetails = "";
+  
+    // tenta extrair erros específicos se existirem
+    if (typeof log.error === "string") {
+      try {
+        const parsed = JSON.parse(log.error) as LogError;
+        if (parsed.errors) {
+          const entries = Object.entries(parsed.errors)
+            .map(([field, msgs]) => `${field} → ${(msgs as string[]).join(", ")}`);
+          errorDetails = entries.join("; ");
+        }
+      } catch {
+        // nada a fazer
+      }
+    } else if (typeof log.error === "object" && log.error?.errors) {
+      const entries = Object.entries(log.error.errors)
+        .map(([field, msgs]) => `${field} → ${(msgs as string[]).join(", ")}`);
+      errorDetails = entries.join("; ");
+    }
+  
     const readable = [
       `🕒 ${formatBRT(log.timestamp)} (Horário Brasília)`,
       `📍 step: ${log.step}`,
       `⚙️ status: ${log.status}`,
       `💬 ${log.message || "-"}`,
-      log.error
-        ? `❗ cause: ${extractErrorMessage(log.error)}`
-        : "",
-      log.meta?.email ? `👤 ${log.meta.email}` : "",
+      `❗ cause: ${errorMessage}`,
+      errorDetails ? `🔍 detail: ${errorDetails}` : "",
+      log.meta?.email ? `👤 user: ${log.meta.email}` : "",
+      log.meta?.amount ? `💰 amount: R$${(log.meta.amount / 100).toFixed(2)}` : "",
+      log.meta?.order_id ? `💾 order_id: ${log.meta.order_id}` : "",
+      log.meta?.charge_id ? `💾 charge_id: ${log.meta.charge_id}` : "",
+      log.meta?.ip ? `🌐 ip: ${log.meta.ip}` : "",
     ]
       .filter(Boolean)
       .join("\n");
+  
     copyToClipboard(readable);
   }
 

@@ -2,69 +2,99 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>🎵 Studio Art Hub · Em manutenção</title>
-    <meta name="description" content="Estamos afinando os últimos instrumentos do nosso novo site. Voltaremos em breve!" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      name="description"
+      content="Studio Art Hub — Modo manutenção ativo temporariamente. Em breve, o novo site completo."
+    />
+    <title>Studio Art Hub | Em manutenção</title>
     <link rel="icon" href="/favicon.ico" />
+
+    <!-- ✅ ESTILO LOCAL: sem dependências externas, ideal para /public -->
     <style>
+      :root {
+        --navy: #101828;
+        --rose: #e9b8c7;
+        --gold: #e7b75f;
+        --cta: #c7355d;
+        --cta-hover: #a62c4d;
+        --bg: #fffbf7;
+        --text: #0b1324;
+        --muted: #667085;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        margin: 0;
         font-family: "Segoe UI", system-ui, sans-serif;
-        background: #fffbf7;
-        color: #0b1324;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0 1.5rem;
         display: flex;
-        justify-content: center;
         align-items: center;
-        height: 100vh;
+        justify-content: center;
+        min-height: 100vh;
         text-align: center;
       }
-      main {
+
+      main.container-page {
         max-width: 600px;
-        padding: 2rem;
+        width: 100%;
+        padding: 2rem 1rem;
       }
+
       h1 {
-        font-size: 2rem;
-        color: #101828;
+        font-size: clamp(2rem, 5vw, 2.5rem);
+        color: var(--navy);
         margin-bottom: 1rem;
-      }
-      p {
-        color: #667085;
-        font-size: 1.1rem;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-      }
-      a.button {
-        display: inline-block;
-        background-color: #0b1324;
-        color: white;
-        text-decoration: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 9999px;
         font-weight: 600;
-        transition: opacity 0.2s ease-in-out;
       }
-      a.button:hover {
-        opacity: 0.85;
+
+      p {
+        color: var(--muted);
+        font-size: clamp(1.05rem, 2vw, 1.2rem);
+        margin-bottom: 2rem;
+        line-height: 1.6;
       }
+
+      a.cta {
+        display: inline-block;
+        background: var(--cta);
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.3s ease;
+      }
+
+      a.cta:hover {
+        background: var(--cta-hover);
+      }
+
       footer {
-        margin-top: 1.5rem;
-        color: #667085;
+        margin-top: 3rem;
+        color: var(--muted);
         font-size: 0.9rem;
       }
     </style>
   </head>
-  <body>
-    <main>
-      <h1>🎵 Studio Art Hub</h1>
 
+  <body>
+    <main class="container-page">
+      <h1>🎵 Studio Art Hub</h1>
       <p>
-        Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.
-        <br />
+        Estamos <strong>afinando os últimos instrumentos</strong> do nosso novo site.<br />
         Em breve, você poderá
         <em>transformar sua história em música</em> com nossa criação híbrida —
         humana + IA <strong>Donna Pro®</strong>.
       </p>
-
       <a
         class="cta"
         href="https://wa.me/5596991451428?text=Oi!%20Quero%20criar%20uma%20m%C3%BAsica%20personalizada%20com%20voc%C3%AAs.%20%0A%C3%89%20para%20uma%20ocasi%C3%A3o%20muito%20especial."
@@ -75,9 +105,13 @@
       </a>
 
       <footer>
-        © <script>document.write(new Date().getFullYear());</script>
-        Studio Art Hub · Todos os direitos reservados
+        © <span id="year"></span> Studio Art Hub · Todos os direitos reservados
       </footer>
     </main>
+
+    <!-- ✅ Script mínimo e isolado, sem Next.js -->
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
   </body>
 </html>

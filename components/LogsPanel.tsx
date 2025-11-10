@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 interface LogEntry {
   timestamp: string;
@@ -8,7 +8,7 @@ interface LogEntry {
   flow: string;
   status: string;
   message?: string | null;
-  error?: string | null;
+  error?: any; // pode vir string ou objeto
   meta?: {
     email?: string | null;
     amount?: number | null;
@@ -25,13 +25,14 @@ export default function LogsPanel() {
   const [filterEmail, setFilterEmail] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
 
   const ENDPOINT =
     "https://studioarthub-api.rapid-hill-dc23.workers.dev/api/system/logs/full";
 
   async function fetchLogs() {
     try {
-      const res = await fetch(ENDPOINT);
+      const res = await fetch(ENDPOINT, { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if (data?.ok && Array.isArray(data.logs)) {
@@ -45,6 +46,19 @@ export default function LogsPanel() {
       setOnline(false);
     } finally {
       setLoading(false);
+      // registra horário de atualização no fuso de Brasília
+      setLastUpdated(
+        new Date().toLocaleString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+      );
     }
   }
 
@@ -54,26 +68,43 @@ export default function LogsPanel() {
     return () => clearInterval(interval);
   }, [refreshKey]);
 
-  function localTime(utc: string) {
+  // ✅ Converte um timestamp ISO/UTC para Horário de Brasília corretamente
+  function formatBRT(utcIso: string) {
     try {
-      const d = new Date(utc);
-      const offsetMs = -3 * 60 * 60 * 1000; // UTC-3
-      const local = new Date(d.getTime() + offsetMs);
-      return local.toLocaleString("pt-BR");
+      const d = new Date(utcIso);
+      return new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(d);
     } catch {
-      return utc;
+      return utcIso;
     }
   }
 
-  const filtered = logs.filter((l) => {
-    const matchEmail = !filterEmail || l.meta?.email?.includes(filterEmail);
-    const matchStatus =
-      !filterStatus || l.status.toLowerCase() === filterStatus.toLowerCase();
-    return matchEmail && matchStatus;
-  });
+  const filtered = useMemo(() => {
+    return logs.filter((l) => {
+      const matchEmail = !filterEmail || l.meta?.email?.includes(filterEmail);
+      const matchStatus =
+        !filterStatus || l.status.toLowerCase() === filterStatus.toLowerCase();
+      return matchEmail && matchStatus;
+    });
+  }, [logs, filterEmail, filterStatus]);
+
+  const sorted = useMemo(() => {
+    return [...filtered].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }, [filtered]);
 
   const total = logs.length;
-  const shown = filtered.length;
+  const shown = sorted.length;
 
   function statusColor(status: string) {
     switch (status) {
@@ -88,11 +119,21 @@ export default function LogsPanel() {
     }
   }
 
+  function compactError(err: any): string {
+    if (!err) return "-";
+    if (typeof err === "string") return err;
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
+
   return (
     <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-6xl">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          📊 Painel de Logs PIX
+          📊 Painel de Logs — Horário de Brasília (America/Sao_Paulo)
         </h2>
         <div className="flex items-center gap-3">
           <span
@@ -104,7 +145,7 @@ export default function LogsPanel() {
               className={`h-2 w-2 rounded-full ${
                 online ? "bg-green-500" : "bg-red-500"
               }`}
-            ></span>
+            />
             {online ? "Conectado" : "Offline"}
           </span>
           <button
@@ -119,7 +160,7 @@ export default function LogsPanel() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-2">
         <input
           type="text"
           placeholder="Filtrar por e-mail"
@@ -140,11 +181,14 @@ export default function LogsPanel() {
         <span className="text-gray-500 text-sm">
           Mostrando {shown}/{total} registros
         </span>
+        <span className="ml-auto text-xs text-gray-400">
+          Última atualização (BRT): {lastUpdated || "-"}
+        </span>
       </div>
 
       {loading ? (
         <p className="text-gray-500">Carregando logs...</p>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <p className="text-gray-500">Nenhum log encontrado.</p>
       ) : (
         <div className="overflow-x-auto max-h-[70vh] border rounded-md">
@@ -160,42 +204,54 @@ export default function LogsPanel() {
               </tr>
             </thead>
             <tbody>
-              {filtered
-                .sort(
-                  (a, b) =>
-                    new Date(b.timestamp).getTime() -
-                    new Date(a.timestamp).getTime()
-                )
-                .map((log, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 border-b text-gray-600">
-                      {localTime(log.timestamp)}
-                    </td>
-                    <td className="px-3 py-2 border-b">{log.step}</td>
-                    <td
-                      className={`px-3 py-2 border-b text-xs font-semibold rounded ${statusColor(
-                        log.status
-                      )}`}
-                    >
-                      {log.status}
-                    </td>
-                    <td className="px-3 py-2 border-b">
-                      {log.meta?.email || "-"}
-                    </td>
-                    <td className="px-3 py-2 border-b">
-                      {log.message || "-"}
-                    </td>
-                    <td className="px-3 py-2 border-b text-red-500 text-xs max-w-xs overflow-hidden truncate">
-                      {log.error
-                        ? log.error.substring(0, 120) + "..."
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
+              {sorted.map((log, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="px-3 py-2 border-b text-gray-600">
+                    {formatBRT(log.timestamp)}
+                  </td>
+                  <td className="px-3 py-2 border-b">{log.step}</td>
+                  <td
+                    className={`px-3 py-2 border-b text-xs font-semibold rounded ${statusColor(
+                      log.status
+                    )}`}
+                  >
+                    {log.status}
+                  </td>
+                  <td className="px-3 py-2 border-b">
+                    {log.meta?.email || "-"}
+                  </td>
+                  <td className="px-3 py-2 border-b">
+                    {log.message || "-"}
+                  </td>
+                  <td className="px-3 py-2 border-b text-red-500 text-xs max-w-xs overflow-hidden truncate">
+                    {compactError(log.error)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       )}
+
+      {/* Ações utilitárias */}
+      <div className="mt-4 flex items-center gap-2">
+        <button
+          onClick={() => {
+            setFilterEmail("");
+            setFilterStatus("");
+            setRefreshKey((v) => v + 1);
+          }}
+          className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded-md"
+        >
+          Limpar filtros
+        </button>
+        <button
+          onClick={() => setRefreshKey((v) => v + 1)}
+          className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-md"
+        >
+          Recarregar
+        </button>
+      </div>
     </div>
   );
 }

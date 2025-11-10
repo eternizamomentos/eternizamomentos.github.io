@@ -2,13 +2,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+// Tipagem segura e compatível com ESLint/TS
 interface LogEntry {
   timestamp: string;
   step: string;
   flow: string;
   status: string;
   message?: string | null;
-  error?: any; // pode vir string ou objeto
+  error?: string | Record<string, unknown> | null;
   meta?: {
     email?: string | null;
     amount?: number | null;
@@ -30,7 +31,7 @@ export default function LogsPanel() {
   const ENDPOINT =
     "https://studioarthub-api.rapid-hill-dc23.workers.dev/api/system/logs/full";
 
-  async function fetchLogs() {
+  async function fetchLogs(): Promise<void> {
     try {
       const res = await fetch(ENDPOINT, { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status);
@@ -46,7 +47,7 @@ export default function LogsPanel() {
       setOnline(false);
     } finally {
       setLoading(false);
-      // registra horário de atualização no fuso de Brasília
+      // Registra o horário de atualização no fuso horário de Brasília
       setLastUpdated(
         new Date().toLocaleString("pt-BR", {
           timeZone: "America/Sao_Paulo",
@@ -68,8 +69,8 @@ export default function LogsPanel() {
     return () => clearInterval(interval);
   }, [refreshKey]);
 
-  // ✅ Converte um timestamp ISO/UTC para Horário de Brasília corretamente
-  function formatBRT(utcIso: string) {
+  // ✅ Converte o timestamp UTC para Horário de Brasília corretamente
+  function formatBRT(utcIso: string): string {
     try {
       const d = new Date(utcIso);
       return new Intl.DateTimeFormat("pt-BR", {
@@ -87,9 +88,24 @@ export default function LogsPanel() {
     }
   }
 
+  // Função segura de compactação de erro
+  function compactError(err: unknown): string {
+    if (!err) return "-";
+    if (typeof err === "string") return err;
+    if (typeof err === "object") {
+      try {
+        return JSON.stringify(err);
+      } catch {
+        return "[Objeto não serializável]";
+      }
+    }
+    return String(err);
+  }
+
   const filtered = useMemo(() => {
     return logs.filter((l) => {
-      const matchEmail = !filterEmail || l.meta?.email?.includes(filterEmail);
+      const matchEmail =
+        !filterEmail || l.meta?.email?.toLowerCase().includes(filterEmail.toLowerCase());
       const matchStatus =
         !filterStatus || l.status.toLowerCase() === filterStatus.toLowerCase();
       return matchEmail && matchStatus;
@@ -106,7 +122,7 @@ export default function LogsPanel() {
   const total = logs.length;
   const shown = sorted.length;
 
-  function statusColor(status: string) {
+  function statusColor(status: string): string {
     switch (status) {
       case "done":
         return "bg-green-100 text-green-800";
@@ -116,16 +132,6 @@ export default function LogsPanel() {
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
-    }
-  }
-
-  function compactError(err: any): string {
-    if (!err) return "-";
-    if (typeof err === "string") return err;
-    try {
-      return JSON.stringify(err);
-    } catch {
-      return String(err);
     }
   }
 
@@ -233,7 +239,6 @@ export default function LogsPanel() {
         </div>
       )}
 
-      {/* Ações utilitárias */}
       <div className="mt-4 flex items-center gap-2">
         <button
           onClick={() => {

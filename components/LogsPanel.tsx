@@ -139,7 +139,7 @@ export default function LogsPanel() {
     <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-6xl">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          📊 Painel de Logs — Horário de Brasília (America/Sao_Paulo)
+          📊 Painel de Logs - Studio Art Hub
         </h2>
         <div className="flex items-center gap-3">
           <span

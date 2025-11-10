@@ -2,20 +2,29 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+interface LogMeta {
+  email?: string | null;
+  amount?: number | null;
+  order_id?: string | null;
+  charge_id?: string | null;
+  ip?: string | null;
+  session_id?: string | null;
+}
+
+interface LogError {
+  message?: string;
+  errors?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface LogEntry {
   timestamp: string;
   step: string;
   flow: string;
   status: string;
   message?: string | null;
-  error?: string | Record<string, unknown> | null;
-  meta?: {
-    email?: string | null;
-    amount?: number | null;
-    order_id?: string | null;
-    charge_id?: string | null;
-    ip?: string | null;
-  };
+  error?: string | LogError | null;
+  meta?: LogMeta;
 }
 
 export default function LogsPanel() {
@@ -31,10 +40,11 @@ export default function LogsPanel() {
   const ENDPOINT =
     "https://studioarthub-api.rapid-hill-dc23.workers.dev/api/system/logs/full";
 
+  // ===== FETCH =====
   async function fetchLogs(): Promise<void> {
     try {
       const res = await fetch(ENDPOINT, { cache: "no-store" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data?.ok && Array.isArray(data.logs)) {
         setLogs(data.logs);
@@ -68,6 +78,7 @@ export default function LogsPanel() {
     return () => clearInterval(interval);
   }, [refreshKey]);
 
+  // ===== FORMATTERS =====
   function formatBRT(utcIso: string): string {
     try {
       const d = new Date(utcIso);
@@ -86,25 +97,46 @@ export default function LogsPanel() {
     }
   }
 
-  function compactError(err: unknown): string {
-    if (!err) return "-";
-    if (typeof err === "string") return err;
-    if (typeof err === "object") {
+  function extractErrorMessage(error: string | LogError | null | undefined): string {
+    if (!error) return "-";
+    if (typeof error === "string") {
       try {
-        return JSON.stringify(err);
+        const parsed = JSON.parse(error) as LogError;
+        return parsed.message || error;
       } catch {
-        return "[Objeto não serializável]";
+        return error;
       }
     }
-    return String(err);
+    if (typeof error === "object") {
+      return error.message ?? "-";
+    }
+    return "-";
   }
 
+  // ===== COPY SYSTEM =====
   function copyToClipboard(text: string): void {
     void navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
 
+  function copyLogReadable(log: LogEntry): void {
+    const readable = [
+      `🕒 ${formatBRT(log.timestamp)} (Horário Brasília)`,
+      `📍 step: ${log.step}`,
+      `⚙️ status: ${log.status}`,
+      `💬 ${log.message || "-"}`,
+      log.error
+        ? `❗ cause: ${extractErrorMessage(log.error)}`
+        : "",
+      log.meta?.email ? `👤 ${log.meta.email}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    copyToClipboard(readable);
+  }
+
+  // ===== FILTERS =====
   const filtered = useMemo(() => {
     return logs.filter((l) => {
       const matchEmail =
@@ -138,9 +170,9 @@ export default function LogsPanel() {
     }
   }
 
+  // ===== RENDER =====
   return (
     <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-6xl relative">
-      {/* Feedback de cópia */}
       {copied && (
         <div className="fixed bottom-6 right-6 bg-green-600 text-white px-3 py-2 rounded-md shadow z-50 animate-fadeIn">
           Copiado!
@@ -149,7 +181,7 @@ export default function LogsPanel() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          📊 Painel de Logs — Studio Art Hub
+          📊 Painel de Logs — Horário de Brasília
         </h2>
         <div className="flex items-center gap-3">
           <span
@@ -216,7 +248,7 @@ export default function LogsPanel() {
                 <th className="px-3 py-2 border-b">Status</th>
                 <th className="px-3 py-2 border-b">Email</th>
                 <th className="px-3 py-2 border-b">Mensagem</th>
-                <th className="px-3 py-2 border-b">Erro</th>
+                <th className="px-3 py-2 border-b">Erro / Causa</th>
                 <th className="px-3 py-2 border-b text-center">Copiar</th>
               </tr>
             </thead>
@@ -252,16 +284,14 @@ export default function LogsPanel() {
                     className="px-3 py-2 border-b text-red-500 text-xs max-w-xs overflow-hidden truncate cursor-pointer"
                     title="Clique para copiar o erro"
                     onClick={() =>
-                      log.error && copyToClipboard(compactError(log.error))
+                      log.error && copyToClipboard(extractErrorMessage(log.error))
                     }
                   >
-                    {compactError(log.error)}
+                    {extractErrorMessage(log.error)}
                   </td>
                   <td className="px-3 py-2 border-b text-center">
                     <button
-                      onClick={() =>
-                        copyToClipboard(JSON.stringify(log, null, 2))
-                      }
+                      onClick={() => copyLogReadable(log)}
                       className="text-xs text-blue-600 hover:underline"
                     >
                       Copiar

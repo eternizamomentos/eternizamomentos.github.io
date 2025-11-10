@@ -16,9 +16,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         setIsAllowed(false);
         return;
       }
-
-      if (!window.location.pathname.includes("maintenance.html")) {
+      // Permite acessar o painel de logs sem redirecionar
+      if (window.location.pathname.startsWith("/logs-preview")) {
+        console.log("🔓 Acesso permitido: logs-preview");
+      } else {
         window.location.replace("/maintenance.html");
+      }
         return;
       }
     } else {

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-// Tipagem segura e compatível com ESLint/TS
 interface LogEntry {
   timestamp: string;
   step: string;
@@ -27,6 +26,7 @@ export default function LogsPanel() {
   const [filterStatus, setFilterStatus] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [copied, setCopied] = useState(false);
 
   const ENDPOINT =
     "https://studioarthub-api.rapid-hill-dc23.workers.dev/api/system/logs/full";
@@ -47,7 +47,6 @@ export default function LogsPanel() {
       setOnline(false);
     } finally {
       setLoading(false);
-      // Registra o horário de atualização no fuso horário de Brasília
       setLastUpdated(
         new Date().toLocaleString("pt-BR", {
           timeZone: "America/Sao_Paulo",
@@ -69,7 +68,6 @@ export default function LogsPanel() {
     return () => clearInterval(interval);
   }, [refreshKey]);
 
-  // ✅ Converte o timestamp UTC para Horário de Brasília corretamente
   function formatBRT(utcIso: string): string {
     try {
       const d = new Date(utcIso);
@@ -88,7 +86,6 @@ export default function LogsPanel() {
     }
   }
 
-  // Função segura de compactação de erro
   function compactError(err: unknown): string {
     if (!err) return "-";
     if (typeof err === "string") return err;
@@ -100,6 +97,12 @@ export default function LogsPanel() {
       }
     }
     return String(err);
+  }
+
+  function copyToClipboard(text: string): void {
+    void navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   }
 
   const filtered = useMemo(() => {
@@ -136,10 +139,17 @@ export default function LogsPanel() {
   }
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-6xl">
+    <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-6xl relative">
+      {/* Feedback de cópia */}
+      {copied && (
+        <div className="fixed bottom-6 right-6 bg-green-600 text-white px-3 py-2 rounded-md shadow z-50 animate-fadeIn">
+          Copiado!
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          📊 Painel de Logs - Studio Art Hub
+          📊 Painel de Logs — Studio Art Hub
         </h2>
         <div className="flex items-center gap-3">
           <span
@@ -207,12 +217,17 @@ export default function LogsPanel() {
                 <th className="px-3 py-2 border-b">Email</th>
                 <th className="px-3 py-2 border-b">Mensagem</th>
                 <th className="px-3 py-2 border-b">Erro</th>
+                <th className="px-3 py-2 border-b text-center">Copiar</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((log, i) => (
                 <tr key={i} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 border-b text-gray-600">
+                  <td
+                    className="px-3 py-2 border-b text-gray-600 cursor-pointer"
+                    title="Clique para copiar o horário"
+                    onClick={() => copyToClipboard(formatBRT(log.timestamp))}
+                  >
                     {formatBRT(log.timestamp)}
                   </td>
                   <td className="px-3 py-2 border-b">{log.step}</td>
@@ -223,14 +238,34 @@ export default function LogsPanel() {
                   >
                     {log.status}
                   </td>
-                  <td className="px-3 py-2 border-b">
+                  <td
+                    className="px-3 py-2 border-b cursor-pointer hover:text-blue-600"
+                    title="Clique para copiar o e-mail"
+                    onClick={() =>
+                      log.meta?.email && copyToClipboard(log.meta.email)
+                    }
+                  >
                     {log.meta?.email || "-"}
                   </td>
-                  <td className="px-3 py-2 border-b">
-                    {log.message || "-"}
-                  </td>
-                  <td className="px-3 py-2 border-b text-red-500 text-xs max-w-xs overflow-hidden truncate">
+                  <td className="px-3 py-2 border-b">{log.message || "-"}</td>
+                  <td
+                    className="px-3 py-2 border-b text-red-500 text-xs max-w-xs overflow-hidden truncate cursor-pointer"
+                    title="Clique para copiar o erro"
+                    onClick={() =>
+                      log.error && copyToClipboard(compactError(log.error))
+                    }
+                  >
                     {compactError(log.error)}
+                  </td>
+                  <td className="px-3 py-2 border-b text-center">
+                    <button
+                      onClick={() =>
+                        copyToClipboard(JSON.stringify(log, null, 2))
+                      }
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      Copiar
+                    </button>
                   </td>
                 </tr>
               ))}

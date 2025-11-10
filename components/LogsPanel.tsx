@@ -2,13 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+// ===== Tipagens Estritas =====
 interface LogMeta {
   email?: string | null;
   amount?: number | null;
   order_id?: string | null;
   charge_id?: string | null;
   ip?: string | null;
-  session_id?: string | null;
+  env?: string | null;
+  endpoint?: string | null;
+  latency_ms?: number | null;
+  suggestion?: string | null;
 }
 
 interface LogError {
@@ -27,6 +31,7 @@ interface LogEntry {
   meta?: LogMeta;
 }
 
+// ===== Componente =====
 export default function LogsPanel() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,11 +41,12 @@ export default function LogsPanel() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
 
   const ENDPOINT =
     "https://studioarthub-api.rapid-hill-dc23.workers.dev/api/system/logs/full";
 
-  // ===== FETCH =====
+  // ===== Fetch Logs =====
   async function fetchLogs(): Promise<void> {
     try {
       const res = await fetch(ENDPOINT, { cache: "no-store" });
@@ -78,7 +84,7 @@ export default function LogsPanel() {
     return () => clearInterval(interval);
   }, [refreshKey]);
 
-  // ===== FORMATTERS =====
+  // ===== Helpers =====
   function formatBRT(utcIso: string): string {
     try {
       const d = new Date(utcIso);
@@ -113,7 +119,29 @@ export default function LogsPanel() {
     return "-";
   }
 
-  // ===== COPY SYSTEM =====
+  function extractErrorDetails(error: string | LogError | null | undefined): string {
+    if (!error) return "";
+    if (typeof error === "string") {
+      try {
+        const parsed = JSON.parse(error) as LogError;
+        if (parsed.errors) {
+          const entries = Object.entries(parsed.errors).map(
+            ([field, msgs]) => `${field} → ${(msgs as string[]).join(", ")}`
+          );
+          return entries.join("; ");
+        }
+      } catch {
+        return "";
+      }
+    } else if (typeof error === "object" && error.errors) {
+      const entries = Object.entries(error.errors).map(
+        ([field, msgs]) => `${field} → ${(msgs as string[]).join(", ")}`
+      );
+      return entries.join("; ");
+    }
+    return "";
+  }
+
   function copyToClipboard(text: string): void {
     void navigator.clipboard.writeText(text);
     setCopied(true);
@@ -121,47 +149,31 @@ export default function LogsPanel() {
   }
 
   function copyLogReadable(log: LogEntry): void {
-    const errorMessage = extractErrorMessage(log.error);
-    let errorDetails = "";
-  
-    // tenta extrair erros específicos se existirem
-    if (typeof log.error === "string") {
-      try {
-        const parsed = JSON.parse(log.error) as LogError;
-        if (parsed.errors) {
-          const entries = Object.entries(parsed.errors)
-            .map(([field, msgs]) => `${field} → ${(msgs as string[]).join(", ")}`);
-          errorDetails = entries.join("; ");
-        }
-      } catch {
-        // nada a fazer
-      }
-    } else if (typeof log.error === "object" && log.error?.errors) {
-      const entries = Object.entries(log.error.errors)
-        .map(([field, msgs]) => `${field} → ${(msgs as string[]).join(", ")}`);
-      errorDetails = entries.join("; ");
-    }
-  
+    const errMsg = extractErrorMessage(log.error);
+    const errDetail = extractErrorDetails(log.error);
     const readable = [
       `🕒 ${formatBRT(log.timestamp)} (Horário Brasília)`,
       `📍 step: ${log.step}`,
       `⚙️ status: ${log.status}`,
       `💬 ${log.message || "-"}`,
-      `❗ cause: ${errorMessage}`,
-      errorDetails ? `🔍 detail: ${errorDetails}` : "",
+      `❗ cause: ${errMsg}`,
+      errDetail ? `🔍 detail: ${errDetail}` : "",
+      log.meta?.endpoint ? `🌐 endpoint: ${log.meta.endpoint}` : "",
+      log.meta?.latency_ms ? `⏱️ latency: ${log.meta.latency_ms}ms` : "",
+      log.meta?.env ? `📦 env: ${log.meta.env}` : "",
       log.meta?.email ? `👤 user: ${log.meta.email}` : "",
       log.meta?.amount ? `💰 amount: R$${(log.meta.amount / 100).toFixed(2)}` : "",
       log.meta?.order_id ? `💾 order_id: ${log.meta.order_id}` : "",
       log.meta?.charge_id ? `💾 charge_id: ${log.meta.charge_id}` : "",
       log.meta?.ip ? `🌐 ip: ${log.meta.ip}` : "",
+      log.meta?.suggestion ? `💡 action: ${log.meta.suggestion}` : "",
     ]
       .filter(Boolean)
       .join("\n");
-  
     copyToClipboard(readable);
   }
 
-  // ===== FILTERS =====
+  // ===== Filtering & Sorting =====
   const filtered = useMemo(() => {
     return logs.filter((l) => {
       const matchEmail =
@@ -195,7 +207,7 @@ export default function LogsPanel() {
     }
   }
 
-  // ===== RENDER =====
+  // ===== Render =====
   return (
     <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-6xl relative">
       {copied && (
@@ -206,7 +218,7 @@ export default function LogsPanel() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          📊 Painel de Logs
+          📊 Painel de Logs — Studio Art Hub
         </h2>
         <div className="flex items-center gap-3">
           <span
@@ -268,23 +280,24 @@ export default function LogsPanel() {
           <table className="min-w-full text-sm text-left text-gray-800">
             <thead className="sticky top-0 bg-gray-100 text-xs uppercase">
               <tr>
-                <th className="px-3 py-2 border-b">Horário (Brasília)</th>
+                <th className="px-3 py-2 border-b">Horário</th>
                 <th className="px-3 py-2 border-b">Etapa</th>
                 <th className="px-3 py-2 border-b">Status</th>
                 <th className="px-3 py-2 border-b">Email</th>
                 <th className="px-3 py-2 border-b">Mensagem</th>
                 <th className="px-3 py-2 border-b">Erro / Causa</th>
+                <th className="px-3 py-2 border-b">Diagnóstico</th>
                 <th className="px-3 py-2 border-b text-center">Copiar</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((log, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td
-                    className="px-3 py-2 border-b text-gray-600 cursor-pointer"
-                    title="Clique para copiar o horário"
-                    onClick={() => copyToClipboard(formatBRT(log.timestamp))}
-                  >
+                <tr
+                  key={i}
+                  onClick={() => setSelectedLog(log)}
+                  className="hover:bg-gray-50 cursor-pointer"
+                >
+                  <td className="px-3 py-2 border-b text-gray-600">
                     {formatBRT(log.timestamp)}
                   </td>
                   <td className="px-3 py-2 border-b">{log.step}</td>
@@ -295,28 +308,22 @@ export default function LogsPanel() {
                   >
                     {log.status}
                   </td>
-                  <td
-                    className="px-3 py-2 border-b cursor-pointer hover:text-blue-600"
-                    title="Clique para copiar o e-mail"
-                    onClick={() =>
-                      log.meta?.email && copyToClipboard(log.meta.email)
-                    }
-                  >
+                  <td className="px-3 py-2 border-b">
                     {log.meta?.email || "-"}
                   </td>
                   <td className="px-3 py-2 border-b">{log.message || "-"}</td>
-                  <td
-                    className="px-3 py-2 border-b text-red-500 text-xs max-w-xs overflow-hidden truncate cursor-pointer"
-                    title="Clique para copiar o erro"
-                    onClick={() =>
-                      log.error && copyToClipboard(extractErrorMessage(log.error))
-                    }
-                  >
+                  <td className="px-3 py-2 border-b text-red-500 text-xs max-w-xs truncate">
                     {extractErrorMessage(log.error)}
+                  </td>
+                  <td className="px-3 py-2 border-b text-xs text-gray-700">
+                    {log.meta?.env || "-"} / {log.meta?.latency_ms || 0}ms
                   </td>
                   <td className="px-3 py-2 border-b text-center">
                     <button
-                      onClick={() => copyLogReadable(log)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyLogReadable(log);
+                      }}
                       className="text-xs text-blue-600 hover:underline"
                     >
                       Copiar
@@ -329,26 +336,35 @@ export default function LogsPanel() {
         </div>
       )}
 
-      <div className="mt-4 flex items-center gap-2">
-        <button
-          onClick={() => {
-            setFilterEmail("");
-            setFilterStatus("");
-            setRefreshKey((v) => v + 1);
-          }}
-          className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm rounded-md"
-        >
-          Limpar filtros
-        </button>
-        <button
-          onClick={() => setRefreshKey((v) => v + 1)}
-          className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-md"
-        >
-          Recarregar
-        </button>
-      </div>
+      {/* Modal Detalhado */}
+      {selectedLog && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-md p-6 max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-lg">
+            <h3 className="text-lg font-semibold mb-3 text-gray-800">
+              🧾 Detalhes do Log
+            </h3>
+            <pre className="text-xs bg-gray-100 p-3 rounded overflow-x-auto whitespace-pre-wrap text-gray-700">
+              {JSON.stringify(selectedLog, null, 2)}
+            </pre>
+            {selectedLog.meta?.suggestion && (
+              <div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-800 rounded">
+                💡 <strong>Ação sugerida:</strong> {selectedLog.meta.suggestion}
+              </div>
+            )}
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => setSelectedLog(null)}
+                className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="mt-6 text-center text-xs text-gray-400">
-  Studio Art Hub — Painel de Logs v2.4.1 • Build {new Date().toLocaleDateString("pt-BR")}
+        Studio Art Hub — Painel de Logs v2.5 Diagnóstico de Pagamentos
       </footer>
     </div>
   );
